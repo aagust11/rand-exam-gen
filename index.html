@@ -46,7 +46,7 @@
 <body>
   <div class="wrap">
     <div class="title">Generador Aleatori d'Exàmens</div>
-    <div class="subtitle">Penja la plantilla <span class="kbd">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), tot en un ZIP.</div>
+    <div class="subtitle">Penja la plantilla <span class="kbd">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), descarregables en ZIP o directament.</div>
 
     <div class="grid">
       <div class="card">
@@ -80,7 +80,7 @@
           </div>
           <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> També descarrega sense ZIP (All_Exams.pdf + Solucionari_Global.xlsx)</label></div>
           <div class="row" style="margin-top:8px">
-            <button class="btn" id="runBtn">Genera PDFs + Solucionari Global (ZIP)</button>
+            <button class="btn" id="runBtn">Genera PDFs + Solucionari Global</button>
             <span class="pill" id="statusPill">Preparat</span>
           </div>
         </div>
@@ -95,7 +95,7 @@
       </div>
     </div>
 
-    <div class="footer">Sortides: <em>Exam_XXXXX.pdf</em> per codi, un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>All_Exams.pdf</em>. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.</div>
+    <div class="footer">Sortides: <em>Exam_XXXXX.pdf</em> per codi, un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>All_Exams.pdf</em>. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.</div>
   </div>
 
   <!-- Lliberies CDN -->
@@ -111,8 +111,11 @@
     const bar = document.getElementById('bar');
     const logEl = document.getElementById('log');
     const statusPill = document.getElementById('statusPill');
-    function log(msg){ logEl.textContent += `
-• ${msg}`; logEl.scrollTop = logEl.scrollHeight; }
+    function log(msg){
+      const prefix = logEl.textContent ? '\n' : '';
+      logEl.textContent += `${prefix}• ${msg}`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
     function setProgress(p){ bar.style.width = Math.max(0, Math.min(100, p)) + '%'; }
     function setStatus(s){ statusPill.textContent = s; }
 
@@ -279,8 +282,7 @@
         }
 
         // Solucionari Global (XLSX + PDF)
-        log('
-Generant Solucionari Global…');
+        log('Generant Solucionari Global…');
         const aoa = [['Codi', ...headers], ...solutionsMatrix];
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -296,8 +298,7 @@ Generant Solucionari Global…');
         const solGlobalPdf = await htmlToPdfBlob(solGlobalHtml, 'Solucionari_Global.pdf');
 
         // Tanca i desa All_Exams
-        log('
-Compilant All_Exams.pdf…');
+        log('Compilant All_Exams.pdf…');
         const allPdfBytes = await combinedPdf.save();
         const allPdf = new Blob([allPdfBytes], {type:'application/pdf'});
 
@@ -323,8 +324,7 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`;
           saveAs(zipBlob, 'exams_and_solutions.zip');
         }
 
-        setProgress(100); setStatus('Fet ✅'); log('
-Tot llest!');
+        setProgress(100); setStatus('Fet ✅'); log('Tot llest!');
 
       }catch(err){ console.error(err); setStatus('Error'); log('❌ ' + (err && err.message? err.message : String(err))); }
     });
