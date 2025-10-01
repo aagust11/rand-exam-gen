@@ -278,8 +278,7 @@
         }
 
         // --- Genera Solucionari Global (PDF + Excel) ---
-        log('
-Generant Solucionari Global…');
+        log('\nGenerant Solucionari Global…');
         const headerHtml = ['<th style="text-align:left">Codi</th>', ...headers.map(h=>`<th>${h}</th>`)].join('');
         const rowsHtml = solutionsMatrix.map(row=>`<tr>${['<td style="font-weight:700">'+row[0]+'</td>', ...row.slice(1).map(v=>'<td>'+v+'</td>')].join('')}</tr>`).join('');
         const solGlobalHtml = `<div style="font-family:Times New Roman,serif;color:#000">`+
@@ -303,8 +302,7 @@ Generant Solucionari Global…');
         saveAs(zipBlob, 'exams_and_solutions.zip');
         setProgress(100);
         setStatus('Fet ✅');
-        log('
-Tot llest! S\'ha descarregat el ZIP.');
+        log('\nTot llest! S\'ha descarregat el ZIP.');
 
       }catch(err){
         console.error(err);
