@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generador Aleatori d'Exàmens</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#111a2b; --ink:#e7eefc; --muted:#a9b6d3; --accent:#7aa2ff; --accent-2:#3dd6b7; --danger:#ff6b6b;
+      --radius:18px; --gap:14px; --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 800px at 85% -10%,#18305a 0%, transparent 60%),
+                       radial-gradient(900px 600px at -10% -10%, #10284c 0%, transparent 55%),
+                       var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:var(--accent)}
+    .wrap{max-width:1100px;margin:40px auto;padding:0 18px}
+    .title{font-size:32px;line-height:1.1;margin:0 0 6px;font-weight:800;letter-spacing:.2px}
+    .subtitle{margin:0 0 26px;color:var(--muted)}
+    .grid{display:grid;gap:var(--gap);grid-template-columns:1.2fr .8fr}
+    @media (max-width:960px){.grid{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);
+          border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card h3{margin:0 0 12px;font-size:18px}
+    .card .content{padding:20px}
+    .input{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    input[type="file"], input[type="number"], select{width:100%;background:#0c1630;border:1px solid rgba(255,255,255,.14);color:var(--ink);padding:12px;border-radius:12px}
+    label{font-size:13px;color:var(--muted)}
+    .btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;font-weight:700;color:#0b1220;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+         cursor:pointer;box-shadow:0 8px 18px rgba(64,131,255,.35);transition:transform .06s ease}
+    .btn:active{transform:translateY(1px)}
+    .pill{display:inline-flex;align-items:center;gap:10px;background:#0e1931;border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--muted)}
+    .switch{display:flex;align-items:center;gap:10px}
+    .switch input{accent-color:var(--accent)}
+
+    .progress{height:12px;background:#0c1732;border:1px solid rgba(255,255,255,.14);border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+    .log{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;background:#0b142a;border-radius:12px;min-height:120px;padding:12px;border:1px solid rgba(255,255,255,.08);overflow:auto;white-space:pre-wrap}
+
+    .hint{font-size:12px;color:var(--muted)}
+    .footer{margin:28px 0 0;color:var(--muted);font-size:12px}
+    .kbd{background:#081026;border:1px solid rgba(255,255,255,.15);padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">Generador Aleatori d'Exàmens</div>
+    <div class="subtitle">Penja la plantilla <span class="kbd">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un solucionari per a cada codi, tot en un ZIP.</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="content">
+          <h3>Configuració d'entrada</h3>
+          <div class="input">
+            <label>Plantilla d'examen en Word (<strong>.docx</strong>)</label>
+            <input type="file" id="docxInput" accept=".docx" />
+            <div class="hint">La plantilla ha de contenir els marcadors {NCodi} i {Pregunta01}..{Pregunta99} on vulguis inserir cada bloc de pregunta.</div>
+          </div>
+          <div class="input">
+            <label>Fitxer amb banc de preguntes (<strong>.xlsx</strong>)</label>
+            <input type="file" id="xlsxInput" accept=".xlsx,.xls" />
+            <div class="hint">Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes</div>
+          </div>
+          <div class="row">
+            <div class="input" style="flex:1 1 180px">
+              <label>Quantes versions?</label>
+              <input type="number" id="numVersions" min="1" max="200" value="5" />
+            </div>
+            <div class="input" style="flex:1 1 220px">
+              <label>Ordenació de preguntes</label>
+              <select id="orderMode">
+                <option value="keep">Mantenir l'ordre de l'Excel</option>
+                <option value="shuffle">Desordenar a cada versió</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <label class="switch"><input type="checkbox" id="limitToPlaceholders" checked /> Utilitzar només els {PreguntaXX} presents a la plantilla</label>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="runBtn">Genera PDF + Solucionaris (ZIP)</button>
+            <span class="pill" id="statusPill">Preparat</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="content">
+          <h3>Progrés</h3>
+          <div class="progress"><div class="bar" id="bar"></div></div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">Consells: obre el ZIP i trobaràs <em>Examen_XXXXX.pdf</em> i <em>Solucionari_XXXXX.pdf</em> per a cada codi. Evita caràcters amb confusió (0/O, 1/I/L, 5/S).</div>
+  </div>
+
+  <!-- Lliberies CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+  <script>
+    // Utilitats UI
+    const bar = document.getElementById('bar');
+    const logEl = document.getElementById('log');
+    const statusPill = document.getElementById('statusPill');
+    function log(msg){ logEl.textContent += `\n• ${msg}`; logEl.scrollTop = logEl.scrollHeight; }
+    function setProgress(p){ bar.style.width = Math.max(0, Math.min(100, p)) + '%'; }
+    function setStatus(s){ statusPill.textContent = s; }
+
+    // Charset per codis sense confusió
+    const CODE_CHARS = 'ABCDEFGHJKMNPQRTUVWXYZ2346789'; // exclou O, I, L, S, 0,1,5
+    function makeCode(len=5, used=new Set()){
+      let c; let tries=0;
+      do{
+        c = Array.from({length:len}, ()=> CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
+        tries++; if(tries>10000) throw new Error('No es poden generar més codis únics.');
+      } while(used.has(c));
+      used.add(c); return c;
+    }
+
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+      return arr;
+    }
+
+    // Llegeix l'Excel -> [{statement, correct, incorrects:[..]}]
+    async function parseExcel(file){
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false});
+      const items = [];
+      for(const r of rows){
+        if(!r[0]) continue; // sense enunciat
+        const statement = String(r[0]).trim();
+        const correct = (r[1]!==undefined && r[1]!==null)? String(r[1]).trim() : '';
+        const incorrects = r.slice(2).map(x=> x==null? '' : String(x).trim()).filter(x=> x.length>0);
+        if(!statement || !correct){ continue; }
+        items.push({statement, correct, incorrects});
+      }
+      if(items.length===0) throw new Error('No s\'han trobat preguntes vàlides a l\'Excel.');
+      return items;
+    }
+
+    // Extreu placeholders presents a la plantilla DOCX
+    async function extractTemplateHtml(file){
+      const arrayBuffer = await file.arrayBuffer();
+      const { value: html } = await mammoth.convertToHtml({ arrayBuffer }, { styleMap: [] });
+      // normalitza claus tipus {Pregunta01}
+      const placeholderRegex = /\{Pregunta(\d{2})\}/g;
+      const found = new Set();
+      let m; while((m = placeholderRegex.exec(html))!==null){ found.add(m[1]); }
+      const hasCode = /\{NCodi\}/.test(html);
+      return { html, hasCode, questionSlots: Array.from(found).sort() };
+    }
+
+    // Construeix el bloc HTML per a una pregunta amb opcions barrejades
+    function renderQA(i, q){
+      // q: {statement, options:[{text, isCorrect}], correctLetter}
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      let out = `<div class="q" style="margin:12px 0 16px">`+
+                `<div class="qn" style="font-weight:700">${i}. ${escapeHtml(q.statement)}</div>`+
+                `<div class="opts" style="margin-top:6px">`;
+      q.options.forEach((op, idx)=>{
+        out += `<div style="margin:3px 0">${letters[idx]}. ${escapeHtml(op.text)}</div>`;
+      });
+      out += `</div></div>`;
+      return out;
+    }
+
+    function escapeHtml(s){
+      return s.replace(/[&<>\"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+    }
+
+    async function htmlToPdfBlob(html, filenameHint){
+      const container = document.createElement('div');
+      container.style.padding = '24px';
+      container.style.fontFamily = 'Times New Roman, serif';
+      container.style.color = '#000';
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      const opt = { margin: [10,10,10,10], filename: filenameHint, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+      const pdf = await html2pdf().set(opt).from(container).outputPdf('blob');
+      document.body.removeChild(container);
+      return pdf; // Blob
+    }
+
+    document.getElementById('runBtn').addEventListener('click', async ()=>{
+      try{
+        setStatus('Processant…'); setProgress(0); logEl.textContent='';
+        const docxFile = document.getElementById('docxInput').files[0];
+        const xlsxFile = document.getElementById('xlsxInput').files[0];
+        if(!docxFile) throw new Error('Falta la plantilla .docx');
+        if(!xlsxFile) throw new Error('Falta l\'Excel amb les preguntes');
+
+        const N = Math.max(1, Math.min(200, parseInt(document.getElementById('numVersions').value || '1', 10)));
+        const orderMode = document.getElementById('orderMode').value; // keep | shuffle
+        const useOnlyPlaceholders = document.getElementById('limitToPlaceholders').checked;
+
+        log('Llegint Excel…');
+        const bank = await parseExcel(xlsxFile);
+        log(`S\'han trobat ${bank.length} preguntes al banc.`);
+
+        log('Analitzant plantilla DOCX…');
+        const tpl = await extractTemplateHtml(docxFile);
+        if(!tpl.hasCode) log('⚠️ A la plantilla no s\'ha trobat {NCodi}.');
+        const slots = useOnlyPlaceholders && tpl.questionSlots.length>0
+          ? tpl.questionSlots.map(n=> parseInt(n,10))
+          : Array.from({length: Math.min(99, bank.length)}, (_,i)=> i+1);
+        const need = slots.length;
+        if(bank.length < need) throw new Error(`La plantilla requereix ${need} preguntes però l\'Excel només en té ${bank.length}.`);
+        log(`S\'utilitzaran ${need} posicions de pregunta.`);
+
+        const jszip = new JSZip();
+        const usedCodes = new Set();
+
+        for(let v=1; v<=N; v++){
+          setProgress(Math.round(((v-1)/N)*100));
+          log(`\n— Versió ${v} / ${N}`);
+          const code = makeCode(5, usedCodes);
+          log(`Codi: ${code}`);
+
+          // Selecció i ordre de preguntes
+          let questions = bank.slice(0, need);
+          if(orderMode==='shuffle'){ questions = shuffle(questions.slice()); }
+
+          // Prepara Q&A per a renderitzar i el solucionari
+          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+          const solution = [];
+          const renderedBlocks = [];
+          questions.forEach((q, idx)=>{
+            const options = [{text:q.correct, isCorrect:true}, ...q.incorrects.map(x=>({text:x,isCorrect:false}))];
+            shuffle(options);
+            const correctIndex = options.findIndex(o=>o.isCorrect);
+            solution.push({ number: idx+1, letter: letters[correctIndex] });
+            renderedBlocks.push(renderQA(idx+1, {statement:q.statement, options}));
+          });
+
+          // Substitueix placeholders a l'HTML de plantilla
+          let html = tpl.html;
+          html = html.replace(/\{NCodi\}/g, code);
+          // Inserta cada {PreguntaXX} si existeix
+          renderedBlocks.forEach((block, idx)=>{
+            const key = String(idx+1).padStart(2,'0');
+            const re = new RegExp(`\\{Pregunta${key}\\}`,'g');
+            html = html.replace(re, block);
+          });
+          // Si la plantilla no tenia placeholders concrets, afegeix el qüestionari al final
+          if(renderedBlocks.length && !/\{Pregunta\d{2}\}/.test(tpl.html)){
+            html += '<hr/>' + renderedBlocks.join('');
+          }
+
+          // Prepara capçalera simple per a estetica en PDF
+          html = `<div style="font-family:Times New Roman,serif;color:#000">${html}</div>`;
+
+          // Genera PDF d'examen
+          setStatus(`Generant Examen ${code}…`);
+          const examPdf = await htmlToPdfBlob(html, `Examen_${code}.pdf`);
+          jszip.file(`Examen_${code}.pdf`, examPdf);
+          log(`✔ Examen_${code}.pdf`);
+
+          // Genera Solucionari
+          let solHtml = `<div style="font-family:Times New Roman,serif;color:#000">`+
+                        `<h2>Solucionari – Codi ${code}</h2>`+
+                        `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse">`+
+                        `<tr><th>Preg.</th><th>Resposta correcta</th></tr>`+
+                        solution.map(s=>`<tr><td>${s.number}</td><td>${s.letter}</td></tr>`).join('')+
+                        `</table></div>`;
+          setStatus(`Generant Solucionari ${code}…`);
+          const solPdf = await htmlToPdfBlob(solHtml, `Solucionari_${code}.pdf`);
+          jszip.file(`Solucionari_${code}.pdf`, solPdf);
+          log(`✔ Solucionari_${code}.pdf`);
+        }
+
+        setStatus('Comprimint ZIP…');
+        setProgress(95);
+        const zipBlob = await jszip.generateAsync({type:'blob'});
+        saveAs(zipBlob, 'exàmens_i_solucionaris.zip');
+        setProgress(100);
+        setStatus('Fet ✅');
+        log('\nTot llest! S\'ha descarregat el ZIP.');
+
+      }catch(err){
+        console.error(err);
+        setStatus('Error');
+        log('❌ ' + (err && err.message? err.message : String(err)));
+      }
+    });
+  </script>
+</body>
+</html>
