@@ -78,7 +78,7 @@
           <div class="row">
             <label class="switch"><input type="checkbox" id="limitToPlaceholders" checked /> Utilitzar només els {PreguntaXX} presents a la plantilla</label>
           </div>
-          <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> També descarrega sense ZIP (All_Exams.pdf + Solutions_Global.xlsx)</label></div>
+          <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> També descarrega sense ZIP (All_Exams.pdf + Solucionari_Global.xlsx)</label></div>
           <div class="row" style="margin-top:8px">
             <button class="btn" id="runBtn">Genera PDFs + Solucionari Global (ZIP)</button>
             <span class="pill" id="statusPill">Preparat</span>
@@ -111,7 +111,8 @@
     const bar = document.getElementById('bar');
     const logEl = document.getElementById('log');
     const statusPill = document.getElementById('statusPill');
-    function log(msg){ logEl.textContent += `\n• ${msg}`; logEl.scrollTop = logEl.scrollHeight; }
+    function log(msg){ logEl.textContent += `
+• ${msg}`; logEl.scrollTop = logEl.scrollHeight; }
     function setProgress(p){ bar.style.width = Math.max(0, Math.min(100, p)) + '%'; }
     function setStatus(s){ statusPill.textContent = s; }
 
@@ -126,10 +127,7 @@
       used.add(c); return c;
     }
 
-    function shuffle(arr){
-      for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
-      return arr;
-    }
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 
     // Llegeix l'Excel -> [{statement, correct, incorrects:[..]}]
     async function parseExcel(file){
@@ -138,7 +136,6 @@
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false});
       if(!rows || rows.length < 2) throw new Error('El full necessita com a mínim una fila d\'encapçalament i una fila amb dades.');
-      const header = rows[0]; // s'ignora, pot ser qualsevol text
       const dataRows = rows.slice(1);
       const items = [];
       for(const r of dataRows){
@@ -158,31 +155,27 @@
     async function extractTemplateHtml(file){
       const arrayBuffer = await file.arrayBuffer();
       const { value: html } = await mammoth.convertToHtml({ arrayBuffer }, { styleMap: [] });
-      // normalitza claus tipus {Pregunta01}
-      const placeholderRegex = /\{Pregunta(\d{2})\}/g;
-      const found = new Set();
-      let m; while((m = placeholderRegex.exec(html))!==null){ found.add(m[1]); }
-      const hasCode = /\{NCodi\}/.test(html);
-      return { html, hasCode, questionSlots: Array.from(found).sort() };
+      // Detecta placeholders sense regex complexes
+      const questionSlots = [];
+      for(let i=1;i<=99;i++){
+        const key = String(i).padStart(2,'0');
+        if(html.includes(`{Pregunta${key}}`)) questionSlots.push(key);
+      }
+      const hasCode = html.includes('{NCodi}');
+      return { html, hasCode, questionSlots };
     }
 
     // Construeix el bloc HTML per a una pregunta amb opcions barrejades
     function renderQA(i, q){
-      // q: {statement, options:[{text, isCorrect}], correctLetter}
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       let out = `<div class="q" style="margin:12px 0 16px">`+
                 `<div class="qn" style="font-weight:700">${i}. ${escapeHtml(q.statement)}</div>`+
                 `<div class="opts" style="margin-top:6px">`;
-      q.options.forEach((op, idx)=>{
-        out += `<div style="margin:3px 0">${letters[idx]}. ${escapeHtml(op.text)}</div>`;
-      });
-      out += `</div></div>`;
-      return out;
+      q.options.forEach((op, idx)=>{ out += `<div style="margin:3px 0">${letters[idx]}. ${escapeHtml(op.text)}</div>`; });
+      out += `</div></div>`; return out;
     }
 
-    function escapeHtml(s){
-      return s.replace(/[&<>\"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
-    }
+    function escapeHtml(s){ return s.replace(/[&<>\"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c])); }
 
     async function htmlToPdfBlob(html, filenameHint){
       const container = document.createElement('div');
@@ -208,10 +201,11 @@
         const N = Math.max(1, Math.min(200, parseInt(document.getElementById('numVersions').value || '1', 10)));
         const orderMode = document.getElementById('orderMode').value; // keep | shuffle
         const useOnlyPlaceholders = document.getElementById('limitToPlaceholders').checked;
+        const alsoDirect = (document.getElementById('alsoDirect') && document.getElementById('alsoDirect').checked) || false;
 
         log('Llegint Excel…');
         const bank = await parseExcel(xlsxFile);
-        log(`S\'han trobat ${bank.length} preguntes al banc.`);
+        log(`S'han trobat ${bank.length} preguntes al banc.`);
 
         log('Analitzant plantilla DOCX…');
         const tpl = await extractTemplateHtml(docxFile);
@@ -221,54 +215,118 @@
           : Array.from({length: Math.min(99, bank.length)}, (_,i)=> i+1);
         const need = slots.length;
         if(bank.length < need) throw new Error(`La plantilla requereix ${need} preguntes però l\'Excel només en té ${bank.length}.`);
-        log(`S\'utilitzaran ${need} posicions de pregunta.`);
+        log(`S'utilitzaran ${need} posicions de pregunta.`);
 
-        const jszip = new JSZip();
+        // Preparació
         const usedCodes = new Set();
-        const solutionsMatrix = []; // cada fila: [codi, P01, P02, ...]
+        const solutionsMatrix = []; // [code, P01..Pnn]
         const headers = Array.from({length: need}, (_,i)=> 'P'+String(i+1).padStart(2,'0'));
-        let allExamsHtml = '';
-        const examBytesList = []; // per combinar en All_Exams.pdf, ...solutionsMatrix];
+        const { PDFDocument } = PDFLib;
+        const combinedPdf = await PDFDocument.create();
+        const A4 = [595.28, 841.89]; // punts A4
+        let zip = null; if(!alsoDirect){ zip = new JSZip(); }
+
+        for(let v=1; v<=N; v++){
+          setProgress(Math.round(((v-1)/N)*80));
+          log(`
+— Versió ${v} / ${N}`);
+          const code = makeCode(5, usedCodes);
+          log(`Codi: ${code}`);
+
+          // Selecció i ordre de preguntes
+          let questions = bank.slice(0, need);
+          if(orderMode==='shuffle'){ questions = shuffle(questions.slice()); }
+
+          // Prepara Q&A per a renderitzar i el solucionari
+          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+          const solution = [];
+          const renderedBlocks = [];
+          questions.forEach((q, idx)=>{
+            const options = [{text:q.correct, isCorrect:true}, ...q.incorrects.map(x=>({text:x,isCorrect:false}))];
+            shuffle(options);
+            const correctIndex = options.findIndex(o=>o.isCorrect);
+            solution.push(letters[correctIndex]);
+            renderedBlocks.push(renderQA(idx+1, {statement:q.statement, options}));
+          });
+          solutionsMatrix.push([code, ...solution]);
+
+          // Crea HTML de l'examen
+          let html = tpl.html;
+          html = html.split('{NCodi}').join(code);
+          if(tpl.questionSlots.length>0){
+            renderedBlocks.forEach((block, idx)=>{
+              const key = String(idx+1).padStart(2,'0');
+              html = html.split(`{Pregunta${key}}`).join(block);
+            });
+          } else {
+            html += '<hr/>' + renderedBlocks.join('');
+          }
+          html = `<div style="font-family:Times New Roman,serif;color:#000">${html}</div>`;
+
+          // Genera PDF de l'examen
+          setStatus(`Generant Exam ${code}…`);
+          const examPdf = await htmlToPdfBlob(html, `Exam_${code}.pdf`);
+          if(zip){ zip.file(`Exam_${code}.pdf`, examPdf, {binary:true}); }
+
+          // Afegeix al PDF combinat i garanteix pàgines parelles
+          const examBytes = await examPdf.arrayBuffer();
+          const examDoc = await PDFDocument.load(examBytes);
+          const copied = await combinedPdf.copyPages(examDoc, examDoc.getPageIndices());
+          copied.forEach(p=> combinedPdf.addPage(p));
+          if(examDoc.getPageCount() % 2 === 1){ combinedPdf.addPage(A4); }
+
+          log(`✔ Exam_${code}.pdf`);
+        }
+
+        // Solucionari Global (XLSX + PDF)
+        log('
+Generant Solucionari Global…');
+        const aoa = [['Codi', ...headers], ...solutionsMatrix];
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         XLSX.utils.book_append_sheet(wb, ws, 'Solucionari');
         const wbArray = XLSX.write(wb, {bookType:'xlsx', type:'array'});
-        jszip.file('Solucionari_Global.xlsx', wbArray);
 
-        // --- Crea All_Exams.pdf ---
-        log('\nConstruint All_Exams.pdf…');
-        const mergedHtml = `<div style=\"font-family:Times New Roman,serif;color:#000\">${allExamsHtml}</div>`;
-        const allPdf = await htmlToPdfBlob(mergedHtml, 'All_Exams.pdf');
-        jszip.file('All_Exams.pdf', allPdf, {binary:true});
+        const headerHtml = ['<th style="text-align:left">Codi</th>', ...headers.map(h=>`<th>${h}</th>`)].join('');
+        const rowsHtml = solutionsMatrix.map(row=>`<tr>${['<td style="font-weight:700">'+row[0]+'</td>', ...row.slice(1).map(v=>'<td>'+v+'</td>')].join('')}</tr>`).join('');
+        const solGlobalHtml = `<div style="font-family:Times New Roman,serif;color:#000">`+
+                              `<h2>Solucionari Global</h2>`+
+                              `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse">`+
+                              `<tr>${headerHtml}</tr>${rowsHtml}</table></div>`;
+        const solGlobalPdf = await htmlToPdfBlob(solGlobalHtml, 'Solucionari_Global.pdf');
 
-        // --- Solucionari Global (PDF + Excel) ---
-        setStatus('Comprimint ZIP…');
-        setProgress(95);
-        // Afegeix README amb instruccions per a Windows
-        const readmeText = `Aquest paquet s'ha generat des del navegador.\n\nPer evitar els avisos de Windows quan extragueu el ZIP:\n1) Clic dret sobre el ZIP → Propietats → marqueu "Desbloquejar" si surt.\n2) Llavors feu "Extreure tot".\nSi el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.\n\nFitxers inclosos:\n- Exam_XXXXX.pdf (un per versió)\n- All_Exams.pdf (tots els exàmens en un sol PDF)\n- Solucionari_Global.xlsx i Solucionari_Global.pdf\n`;
-        jszip.file('README.txt', readmeText);
+        // Tanca i desa All_Exams
+        log('
+Compilant All_Exams.pdf…');
+        const allPdfBytes = await combinedPdf.save();
+        const allPdf = new Blob([allPdfBytes], {type:'application/pdf'});
 
-        // Opcional: descarrega també sense ZIP
-        const alsoDirectEl = document.getElementById('alsoDirect');
-        if(alsoDirectEl && alsoDirectEl.checked){
-          try{
-            saveAs(allPdf, 'All_Exams.pdf');
-            const xlsxBlob = new Blob([wbArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-            saveAs(xlsxBlob, 'Solucionari_Global.xlsx');
-          }catch(_){}
+        if(alsoDirect){
+          // Només baixades directes
+          saveAs(allPdf, 'All_Exams.pdf');
+          const xlsxBlob = new Blob([wbArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+          saveAs(xlsxBlob, 'Solucionari_Global.xlsx');
+        } else {
+          // ZIP amb tot
+          setStatus('Comprimint ZIP…'); setProgress(90);
+          zip.file('All_Exams.pdf', allPdf, {binary:true});
+          zip.file('Solucionari_Global.xlsx', wbArray);
+          zip.file('Solucionari_Global.pdf', solGlobalPdf, {binary:true});
+          const readmeText = `Aquest paquet s'ha generat des del navegador.
+
+Per evitar els avisos de Windows quan extragueu el ZIP:
+1) Clic dret sobre el ZIP → Propietats → marqueu "Desbloquejar" si surt.
+2) Llavors feu "Extreure tot".
+Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`;
+          zip.file('README.txt', readmeText);
+          const zipBlob = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
+          saveAs(zipBlob, 'exams_and_solutions.zip');
         }
 
-        const zipBlob = await jszip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
-        saveAs(zipBlob, 'exams_and_solutions.zip');
-        setProgress(100);
-        setStatus('Fet ✅');
-        log('\nTot llest! S\'ha descarregat el ZIP.');
+        setProgress(100); setStatus('Fet ✅'); log('
+Tot llest!');
 
-      }catch(err){
-        console.error(err);
-        setStatus('Error');
-        log('❌ ' + (err && err.message? err.message : String(err)));
-      }
+      }catch(err){ console.error(err); setStatus('Error'); log('❌ ' + (err && err.message? err.message : String(err))); }
     });
   </script>
 </body>
