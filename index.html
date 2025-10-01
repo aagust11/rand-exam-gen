@@ -78,6 +78,7 @@
           <div class="row">
             <label class="switch"><input type="checkbox" id="limitToPlaceholders" checked /> Utilitzar només els {PreguntaXX} presents a la plantilla</label>
           </div>
+          <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> També descarrega sense ZIP (All_Exams.pdf + Solutions_Global.xlsx)</label></div>
           <div class="row" style="margin-top:8px">
             <button class="btn" id="runBtn">Genera PDFs + Solucionari Global (ZIP)</button>
             <span class="pill" id="statusPill">Preparat</span>
@@ -94,7 +95,7 @@
       </div>
     </div>
 
-    <div class="footer">Sortides: <em>Examen_XXXXX.pdf</em> per codi i un únic <em>Solucionari_Global</em> (PDF i Excel). Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.</div>
+    <div class="footer">Sortides: <em>Exam_XXXXX.pdf</em> per codi, un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>All_Exams.pdf</em>. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.</div>
   </div>
 
   <!-- Lliberies CDN -->
@@ -103,6 +104,7 @@
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
   <script>
     // Utilitats UI
@@ -225,79 +227,37 @@
         const usedCodes = new Set();
         const solutionsMatrix = []; // cada fila: [codi, P01, P02, ...]
         const headers = Array.from({length: need}, (_,i)=> 'P'+String(i+1).padStart(2,'0'));
-
-        for(let v=1; v<=N; v++){
-          setProgress(Math.round(((v-1)/N)*100));
-          log(`\n— Versió ${v} / ${N}`);
-          const code = makeCode(5, usedCodes);
-          log(`Codi: ${code}`);
-
-          // Selecció i ordre de preguntes
-          let questions = bank.slice(0, need);
-          if(orderMode==='shuffle'){ questions = shuffle(questions.slice()); }
-
-          // Prepara Q&A per a renderitzar i el solucionari
-          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-          const solution = [];
-          const renderedBlocks = [];
-          questions.forEach((q, idx)=>{
-            const options = [{text:q.correct, isCorrect:true}, ...q.incorrects.map(x=>({text:x,isCorrect:false}))];
-            shuffle(options);
-            const correctIndex = options.findIndex(o=>o.isCorrect);
-            solution.push(letters[correctIndex]);
-            renderedBlocks.push(renderQA(idx+1, {statement:q.statement, options}));
-          });
-
-          // Desa fila per al solucionari global (mateix ordre que a l'examen)
-          solutionsMatrix.push([code, ...solution]);
-
-          // Substitueix placeholders a l'HTML de plantilla
-          let html = tpl.html;
-          html = html.replace(/\{NCodi\}/g, code);
-          // Inserta cada {PreguntaXX} si existeix
-          renderedBlocks.forEach((block, idx)=>{
-            const key = String(idx+1).padStart(2,'0');
-            const re = new RegExp(`\\{Pregunta${key}\\}`,'g');
-            html = html.replace(re, block);
-          });
-          // Si la plantilla no tenia placeholders concrets, afegeix el qüestionari al final
-          if(renderedBlocks.length && !/\{Pregunta\d{2}\}/.test(tpl.html)){
-            html += '<hr/>' + renderedBlocks.join('');
-          }
-
-          // Prepara capçalera simple per a estetica en PDF
-          html = `<div style="font-family:Times New Roman,serif;color:#000">${html}</div>`;
-
-          // Genera PDF d'examen
-          setStatus(`Generant Examen ${code}…`);
-          const examPdf = await htmlToPdfBlob(html, `Examen_${code}.pdf`);
-          jszip.file(`Examen_${code}.pdf`, examPdf, {binary:true});
-          log(`✔ Examen_${code}.pdf`);
-
-          // (El solucionari individual per codi s'elimina; es fa un únic solucionari global al final)
-        }
-
-        // --- Genera Solucionari Global (PDF + Excel) ---
-        log('\nGenerant Solucionari Global…');
-        const headerHtml = ['<th style="text-align:left">Codi</th>', ...headers.map(h=>`<th>${h}</th>`)].join('');
-        const rowsHtml = solutionsMatrix.map(row=>`<tr>${['<td style="font-weight:700">'+row[0]+'</td>', ...row.slice(1).map(v=>'<td>'+v+'</td>')].join('')}</tr>`).join('');
-        const solGlobalHtml = `<div style="font-family:Times New Roman,serif;color:#000">`+
-                              `<h2>Solucionari Global</h2>`+
-                              `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse">`+
-                              `<tr>${headerHtml}</tr>${rowsHtml}</table></div>`;
-        const solGlobalPdf = await htmlToPdfBlob(solGlobalHtml, 'Solucionari_Global.pdf');
-        jszip.file('Solucionari_Global.pdf', solGlobalPdf, {binary:true});
-
-        // Excel (XLSX)
-        const aoa = [['Codi', ...headers], ...solutionsMatrix];
+        let allExamsHtml = '';
+        const examBytesList = []; // per combinar en All_Exams.pdf, ...solutionsMatrix];
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         XLSX.utils.book_append_sheet(wb, ws, 'Solucionari');
         const wbArray = XLSX.write(wb, {bookType:'xlsx', type:'array'});
         jszip.file('Solucionari_Global.xlsx', wbArray);
 
+        // --- Crea All_Exams.pdf ---
+        log('\nConstruint All_Exams.pdf…');
+        const mergedHtml = `<div style=\"font-family:Times New Roman,serif;color:#000\">${allExamsHtml}</div>`;
+        const allPdf = await htmlToPdfBlob(mergedHtml, 'All_Exams.pdf');
+        jszip.file('All_Exams.pdf', allPdf, {binary:true});
+
+        // --- Solucionari Global (PDF + Excel) ---
         setStatus('Comprimint ZIP…');
         setProgress(95);
+        // Afegeix README amb instruccions per a Windows
+        const readmeText = `Aquest paquet s'ha generat des del navegador.\n\nPer evitar els avisos de Windows quan extragueu el ZIP:\n1) Clic dret sobre el ZIP → Propietats → marqueu "Desbloquejar" si surt.\n2) Llavors feu "Extreure tot".\nSi el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.\n\nFitxers inclosos:\n- Exam_XXXXX.pdf (un per versió)\n- All_Exams.pdf (tots els exàmens en un sol PDF)\n- Solucionari_Global.xlsx i Solucionari_Global.pdf\n`;
+        jszip.file('README.txt', readmeText);
+
+        // Opcional: descarrega també sense ZIP
+        const alsoDirectEl = document.getElementById('alsoDirect');
+        if(alsoDirectEl && alsoDirectEl.checked){
+          try{
+            saveAs(allPdf, 'All_Exams.pdf');
+            const xlsxBlob = new Blob([wbArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+            saveAs(xlsxBlob, 'Solucionari_Global.xlsx');
+          }catch(_){}
+        }
+
         const zipBlob = await jszip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
         saveAs(zipBlob, 'exams_and_solutions.zip');
         setProgress(100);
