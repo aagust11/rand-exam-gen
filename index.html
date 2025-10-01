@@ -60,7 +60,7 @@
           <div class="input">
             <label>Fitxer amb banc de preguntes (<strong>.xlsx</strong>)</label>
             <input type="file" id="xlsxInput" accept=".xlsx,.xls" />
-            <div class="hint">Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes</div>
+            <div class="hint">Fila 1: <em>encapçalaments lliures</em> (s'ignora). Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes</div>
           </div>
           <div class="row">
             <div class="input" style="flex:1 1 180px">
@@ -135,8 +135,12 @@
       const wb = XLSX.read(data, {type:'array'});
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false});
+      if(!rows || rows.length < 2) throw new Error('El full necessita com a mínim una fila d\'encapçalament i una fila amb dades.');
+      const header = rows[0]; // s'ignora, pot ser qualsevol text
+      const dataRows = rows.slice(1);
       const items = [];
-      for(const r of rows){
+      for(const r of dataRows){
+        if(!r || r.length===0) continue;
         if(!r[0]) continue; // sense enunciat
         const statement = String(r[0]).trim();
         const correct = (r[1]!==undefined && r[1]!==null)? String(r[1]).trim() : '';
@@ -144,7 +148,7 @@
         if(!statement || !correct){ continue; }
         items.push({statement, correct, incorrects});
       }
-      if(items.length===0) throw new Error('No s\'han trobat preguntes vàlides a l\'Excel.');
+      if(items.length===0) throw new Error('No s\'han trobat preguntes vàlides a l\'Excel (recorda: fila 1 són encapçalaments).');
       return items;
     }
 
