@@ -3,139 +3,256 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    (function(){
+      try{
+        const pref = localStorage.getItem('theme-preference') || 'system';
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const resolved = pref === 'system' ? (prefersDark ? 'dark' : 'light') : pref;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-mode', pref);
+      }catch(err){
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.setAttribute('data-theme-mode', 'system');
+      }
+    })();
+  </script>
   <link rel="icon" type="image/x-icon" href="src/favicon.ico" />
   <link rel="icon" type="image/png" href="src/favicon.png" />
   <title>Generador Aleatori d'Exàmens</title>
   <style>
     :root{
-      --bg:#0b1220; --panel:#111a2b; --ink:#e7eefc; --muted:#a9b6d3; --accent:#7aa2ff; --accent-2:#3dd6b7; --danger:#ff6b6b;
-      --radius:18px; --gap:14px; --shadow:0 10px 30px rgba(0,0,0,.35);
+      color-scheme: light;
+      --body-bg: linear-gradient(180deg, #f6f8ff 0%, #eef1fb 100%);
+      --panel: #ffffff;
+      --panel-border: rgba(21, 34, 66, 0.08);
+      --ink: #1a243a;
+      --muted: #4b5975;
+      --accent: #3056d3;
+      --accent-2: #1fbfa6;
+      --danger: #d04444;
+      --radius: 18px;
+      --gap: 14px;
+      --shadow: 0 16px 40px rgba(30, 50, 110, 0.15);
+      --header-bg: rgba(238, 241, 251, 0.9);
+      --footer-bg: rgba(238, 241, 251, 0.94);
+      --input-bg: rgba(255, 255, 255, 0.8);
+      --input-border: rgba(23, 42, 84, 0.16);
+      --pill-bg: rgba(48, 86, 211, 0.15);
+      --pill-text: #1a243a;
+      --link-hover: #1c3bb0;
+    }
+    :root[data-theme="dark"]{
+      color-scheme: dark;
+      --body-bg: radial-gradient(1200px 800px at 85% -10%, #18305a 0%, transparent 60%),
+                   radial-gradient(900px 600px at -10% -10%, #10284c 0%, transparent 55%),
+                   #0b1220;
+      --panel: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      --panel-border: rgba(255,255,255,0.08);
+      --ink: #e7eefc;
+      --muted: #a9b6d3;
+      --accent: #7aa2ff;
+      --accent-2: #3dd6b7;
+      --danger: #ff6b6b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --header-bg: rgba(11, 18, 32, 0.82);
+      --footer-bg: rgba(11, 18, 32, 0.86);
+      --input-bg: rgba(12, 22, 48, 0.9);
+      --input-border: rgba(255,255,255,0.14);
+      --pill-bg: rgba(122, 162, 255, 0.2);
+      --pill-text: #0b1220;
+      --link-hover: #9ec0ff;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(1200px 800px at 85% -10%,#18305a 0%, transparent 60%),
-                       radial-gradient(900px 600px at -10% -10%, #10284c 0%, transparent 55%),
-                       var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-    a{color:var(--accent)}
-    .wrap{max-width:1100px;margin:40px auto;padding:0 18px}
-    .title{display:flex;align-items:center;gap:12px;font-size:32px;line-height:1.1;margin:0 0 6px;font-weight:800;letter-spacing:.2px}
-    .title-logo{width:40px;height:40px;flex:0 0 40px;border-radius:12px}
-    .subtitle{margin:0 0 18px;color:var(--muted)}
+    body{
+      margin:0;
+      background:var(--body-bg);
+      color:var(--ink);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+      transition:background .4s ease,color .4s ease;
+    }
+    a{color:var(--accent);text-decoration:none;transition:color .2s ease}
+    a:hover,a:focus{color:var(--link-hover)}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 18px;width:100%}
+    .site-header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:var(--header-bg);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--panel-border);
+    }
+    .header-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand img{width:44px;height:44px;border-radius:14px;flex:0 0 auto}
+    .app-title{margin:0;font-size:24px;font-weight:800;letter-spacing:.3px}
+    .header-controls{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:flex-end}
+    .control-group{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .control-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .language-switch{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--panel-border);border-radius:999px;padding:4px}
+    .language-switch button{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s}
+    .language-switch button.is-active{background:var(--accent);color:#fff;box-shadow:0 8px 18px rgba(64,131,255,.3)}
+    .theme-select{display:flex;align-items:center;gap:8px}
+    .theme-select select{background:var(--panel);border:1px solid var(--panel-border);color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer;min-width:140px}
+    main.site-main{flex:1;width:100%}
+    main.site-main .wrap{padding-top:32px;padding-bottom:48px}
+    .subtitle{margin:0 0 18px;color:var(--muted);font-size:16px;line-height:1.6}
     .templates{margin:0 0 24px;display:flex;flex-wrap:wrap;gap:12px}
-    .templates a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:#0e1931;border:1px solid rgba(255,255,255,.08);text-decoration:none;color:var(--ink);font-size:14px}
-    .templates a svg{width:16px;height:16px;fill:var(--accent)}    .grid{display:grid;gap:var(--gap);grid-template-columns:1.2fr .8fr}
+    .templates a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--panel-border);color:var(--ink);font-size:14px;box-shadow:var(--shadow);transition:transform .15s ease, box-shadow .15s ease}
+    .templates a:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(48,86,211,0.2)}
+    .templates a svg{width:16px;height:16px;fill:var(--accent)}
+    .template-hint{font-size:12px;color:var(--muted);margin:-12px 0 24px}
+    .grid{display:grid;gap:var(--gap);grid-template-columns:1.2fr .8fr}
     @media (max-width:960px){.grid{grid-template-columns:1fr}}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);
-          border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card{background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .card h3{margin:0 0 12px;font-size:18px}
     .card .content{padding:20px}
     .input{display:flex;flex-direction:column;gap:8px;margin:12px 0}
     .row{display:flex;gap:10px;flex-wrap:wrap}
-    input[type="file"], input[type="number"], input[type="text"], select{width:100%;background:#0c1630;border:1px solid rgba(255,255,255,.14);color:var(--ink);padding:12px;border-radius:12px}
+    input[type="file"], input[type="number"], input[type="text"], select{width:100%;background:var(--input-bg);border:1px solid var(--input-border);color:var(--ink);padding:12px;border-radius:12px}
     label{font-size:13px;color:var(--muted)}
-    .btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;font-weight:700;color:#0b1220;background:linear-gradient(135deg,var(--accent),var(--accent-2));
-         cursor:pointer;box-shadow:0 8px 18px rgba(64,131,255,.35);transition:transform .06s ease}
+    .btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;font-weight:700;color:#0b1220;background:linear-gradient(135deg,var(--accent),var(--accent-2));cursor:pointer;box-shadow:0 8px 18px rgba(64,131,255,.35);transition:transform .06s ease}
     .btn:active{transform:translateY(1px)}
-    .pill{display:inline-flex;align-items:center;gap:10px;background:#0e1931;border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill-bg);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--pill-text);font-weight:600}
     .switch{display:flex;align-items:center;gap:10px}
     .switch input{accent-color:var(--accent)}
-
-    .progress{height:12px;background:#0c1732;border:1px solid rgba(255,255,255,.14);border-radius:999px;overflow:hidden}
+    .progress{height:12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:999px;overflow:hidden}
     .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
-    .log{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;background:#0b142a;border-radius:12px;min-height:120px;padding:12px;border:1px solid rgba(255,255,255,.08);overflow:auto;white-space:pre-wrap}
-
+    .log{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;background:var(--input-bg);border-radius:12px;min-height:120px;padding:12px;border:1px solid var(--input-border);overflow:auto;white-space:pre-wrap;color:var(--ink)}
     .hint{font-size:12px;color:var(--muted)}
-    .footer{margin:28px 0 0;color:var(--muted);font-size:12px}
-    .kbd{background:#081026;border:1px solid rgba(255,255,255,.15);padding:2px 6px;border-radius:6px}
+    .outputs-info{margin:28px 0 0;color:var(--muted);font-size:12px}
+    footer.site-footer{margin-top:auto;background:var(--footer-bg);border-top:1px solid var(--panel-border);position:sticky;bottom:0;z-index:20}
+    .footer-inner{padding:16px 0;text-align:center;color:var(--muted);font-size:12px;display:flex;flex-direction:column;gap:6px}
+    .footer-icons{display:flex;justify-content:center;gap:.3em;margin-top:.4em}
+    .footer-icons img{max-width:1em;max-height:1em}
+    .kbd{background:rgba(8,16,38,0.1);border:1px solid rgba(8,16,38,0.2);padding:2px 6px;border-radius:6px;font-size:12px}
+    :root[data-theme="dark"] .kbd{background:#081026;border:1px solid rgba(255,255,255,0.15)}
+    @media (max-width:720px){
+      .header-inner{flex-direction:column;align-items:flex-start}
+      .header-controls{width:100%;justify-content:space-between}
+      .brand img{width:38px;height:38px}
+      .app-title{font-size:22px}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="title">
-      <img src="src/favicon.png" alt="Logotip del generador" class="title-logo" />
-      <span>Generador Aleatori d'Exàmens</span>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <img src="src/favicon.png" alt="Logotip del generador" />
+        <h1 class="app-title" data-i18n="appName">Generador Aleatori d'Exàmens</h1>
+      </div>
+      <div class="header-controls">
+        <div class="control-group">
+          <span class="control-label" data-i18n="languageLabel">Idioma</span>
+          <div class="language-switch" role="group" aria-label="Language selector">
+            <button type="button" data-lang="ca" class="is-active">CA</button>
+            <button type="button" data-lang="es">ES</button>
+            <button type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+        <div class="control-group theme-select">
+          <label for="themeSelect" class="control-label" data-i18n="themeLabel">Mode</label>
+          <select id="themeSelect">
+            <option value="light">Mode clar</option>
+            <option value="dark">Mode fosc</option>
+            <option value="system">Seguir sistema</option>
+          </select>
+        </div>
+      </div>
     </div>
-<div class="subtitle">Penja la plantilla <span class="kbd">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), descarregables en ZIP o directament.</div>
+  </header>
 
-    <div class="templates">
-      <a href="templates/exam-template.docx" download>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h8l6 6v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5L12 3.5zM8.75 12h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5zm0 3h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5zm0 3h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1 0-1.5z"/></svg>
-        Plantilla Word
-      </a>
-      <a href="templates/questions-template.xlsx" download>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h8l6 6v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5L12 3.5zM8.4 11.5h1.8l1.1 1.9 1.1-1.9h1.7l-1.9 3 2 3h-1.8l-1.1-1.8-1.1 1.8H8.5l1.9-3-2-3z"/></svg>
-        Plantilla Excel
-      </a>
-    </div>
-    <div class="hint" style="margin:-12px 0 24px">Les plantilles disponibles són orientatives i explicatives; pots utilitzar qualsevol plantilla pròpia (especialment si tens models oficials d'examens en Word) sempre que mantinguis els marcadors.</div>
-    
-    <div class="grid">
-      <div class="card">
-        <div class="content">
-          <h3>Configuració d'entrada</h3>
-          <div class="input">
-            <label>Plantilla d'examen en Word (<strong>.docx</strong>)</label>
-            <input type="file" id="docxInput" accept=".docx" />
-            <div class="hint">La plantilla ha de contenir els marcadors {NCodi} i {Pregunta01}..{Pregunta99} on vulguis inserir cada bloc de pregunta. En generar l'examen es respecta el format del document original (tipus de lletra, negretes, etc.).</div>
-          </div>
-          <div class="input">
-            <label>Nom base dels fitxers (opcional)</label>
-            <input type="text" id="packageName" placeholder="p. ex. Matematiques_1rESO" />
-            <div class="hint">S'utilitza per al ZIP, per al PDF combinat i per als exàmens individuals. Es convertiran els espais en _ i es retiraran caràcters especials.</div>
-          </div>
-          <div class="input">
-            <label>Fitxer amb banc de preguntes (<strong>.xlsx</strong>)</label>
-            <input type="file" id="xlsxInput" accept=".xlsx,.xls" />
-            <div class="hint">Fila 1: <em>encapçalaments lliures</em> (s'ignora). Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes</div>
-          </div>
-          <div class="row">
-            <div class="input" style="flex:1 1 180px">
-              <label>Quantes versions?</label>
-              <input type="number" id="numVersions" min="1" max="200" value="5" />
+  <main class="site-main">
+    <div class="wrap">
+      <p class="subtitle" data-i18n="subtitle" data-i18n-type="html">Penja la plantilla <span class="kbd">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), descarregables en ZIP o directament.</p>
+
+      <div class="templates">
+        <a id="wordTemplateLink" href="templates/exam-template_ca.docx" download>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h8l6 6v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5L12 3.5zM8.75 12h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5zm0 3h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5zm0 3h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1 0-1.5z"/></svg>
+          <span data-i18n="templateWord">Plantilla Word</span>
+        </a>
+        <a id="excelTemplateLink" href="templates/questions-template_ca.xlsx" download>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h8l6 6v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5L12 3.5zM8.4 11.5h1.8l1.1 1.9 1.1-1.9h1.7l-1.9 3 2 3h-1.8l-1.1-1.8-1.1 1.8H8.5l1.9-3-2-3z"/></svg>
+          <span data-i18n="templateExcel">Plantilla Excel</span>
+        </a>
+      </div>
+      <p class="hint template-hint" data-i18n="templateHint" data-i18n-type="html">Les plantilles disponibles són orientatives i explicatives; pots utilitzar qualsevol plantilla pròpia (especialment si tens models oficials d'exàmens en Word) sempre que mantinguis els marcadors.</p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="content">
+            <h3 data-i18n="inputConfig">Configuració d'entrada</h3>
+            <div class="input">
+              <label data-i18n="labels.docx" data-i18n-type="html">Plantilla d'examen en Word (<strong>.docx</strong>)</label>
+              <input type="file" id="docxInput" accept=".docx" />
+              <div class="hint" data-i18n="hints.docx" data-i18n-type="html">La plantilla ha de contenir els marcadors {NCodi} i {Pregunta01}..{Pregunta99} on vulguis inserir cada bloc de pregunta. En generar l'examen es respecta el format del document original (tipus de lletra, negretes, etc.).</div>
             </div>
-            <div class="input" style="flex:1 1 220px">
-              <label>Ordenació de preguntes</label>
-              <select id="orderMode">
-                <option value="keep">Mantenir l'ordre de l'Excel</option>
-                <option value="shuffle">Desordenar a cada versió</option>
-              </select>
+            <div class="input">
+              <label data-i18n="labels.package">Nom base dels fitxers (opcional)</label>
+              <input type="text" id="packageName" placeholder="p. ex. Matematiques_1rESO" />
+              <div class="hint" data-i18n="hints.package">S'utilitza per al ZIP, per al PDF combinat i per als exàmens individuals. Es convertiran els espais en _ i es retiraran caràcters especials.</div>
+            </div>
+            <div class="input">
+              <label data-i18n="labels.xlsx" data-i18n-type="html">Fitxer amb banc de preguntes (<strong>.xlsx</strong>)</label>
+              <input type="file" id="xlsxInput" accept=".xlsx,.xls" />
+              <div class="hint" data-i18n="hints.xlsx" data-i18n-type="html">Fila 1: <em>encapçalaments lliures</em> (s'ignora). Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes</div>
+            </div>
+            <div class="row">
+              <div class="input" style="flex:1 1 180px">
+                <label data-i18n="labels.numVersions">Quantes versions?</label>
+                <input type="number" id="numVersions" min="1" max="200" value="5" />
+              </div>
+              <div class="input" style="flex:1 1 220px">
+                <label data-i18n="labels.orderMode">Ordenació de preguntes</label>
+                <select id="orderMode">
+                  <option value="keep" data-i18n="order.keep">Mantenir l'ordre de l'Excel</option>
+                  <option value="shuffle" data-i18n="order.shuffle">Desordenar a cada versió</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <label class="switch"><input type="checkbox" id="limitToPlaceholders" checked /> <span data-i18n="labels.limitToPlaceholders">Utilitzar només els {PreguntaXX} presents a la plantilla</span></label>
+            </div>
+            <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> <span data-i18n="labels.alsoDirect">També descarrega sense ZIP (Nom_all.pdf + Solucionari_Global.xlsx)</span></label></div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="runBtn" data-i18n="actions.generate">Genera PDFs + Solucionari Global</button>
+              <span class="pill" id="statusPill">Preparat</span>
             </div>
           </div>
-          <div class="row">
-            <label class="switch"><input type="checkbox" id="limitToPlaceholders" checked /> Utilitzar només els {PreguntaXX} presents a la plantilla</label>
-          </div>
-          <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> També descarrega sense ZIP (Nom_all.pdf + Solucionari_Global.xlsx)</label></div>
-          <div class="row" style="margin-top:8px">
-            <button class="btn" id="runBtn">Genera PDFs + Solucionari Global</button>
-            <span class="pill" id="statusPill">Preparat</span>
+        </div>
+
+        <div class="card">
+          <div class="content">
+            <h3 data-i18n="progress.title">Progrés</h3>
+            <div class="progress"><div class="bar" id="bar"></div></div>
+            <div class="log" id="log"></div>
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="content">
-          <h3>Progrés</h3>
-          <div class="progress"><div class="bar" id="bar"></div></div>
-          <div class="log" id="log"></div>
-        </div>
+      <div class="outputs-info" data-i18n="outputsInfo" data-i18n-type="html">Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>Nom_all.pdf</em> per al combinat. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.</div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div data-i18n="footer.credit" data-i18n-type="html">Aplicació realitzada per <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a> amb l'assistència de la IA.</div>
+      <div data-i18n="footer.version">Versió 1 · Octubre 2025</div>
+      <div>
+        <a href="https://creativecommons.org">Generador Aleatori d'Exàmens</a> © 2025 by
+        <a href="https://creativecommons.org">aagust11@xtec.cat</a> is licensed under
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
       </div>
-    </div>
-
-    <div class="footer">Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>Nom_all.pdf</em> per al combinat. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.</div>
-  </div>
-
-  <footer class="footer" style="margin-top:40px;text-align:center;color:var(--muted);font-size:12px">
-    <div>Aplicació realitzada per <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a> amb l'assistència de la IA.</div>
-    <div>Versió 1 · Octubre 2025</div>
-    <div>
-      <a href="https://creativecommons.org">Generador Aleatori d'Exàmens</a> © 2025 by
-      <a href="https://creativecommons.org">aagust11@xtec.cat</a> is licensed under
-      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-    </div>
-    <div style="display:flex;justify-content:center;gap:.3em;margin-top:.4em">
-      <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="Creative Commons" style="max-width:1em;max-height:1em" />
-      <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="Reconeixement" style="max-width:1em;max-height:1em" />
-      <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="No Comercial" style="max-width:1em;max-height:1em" />
-      <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="Compartir Igual" style="max-width:1em;max-height:1em" />
+      <div class="footer-icons">
+        <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="Creative Commons" />
+        <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="Reconeixement" />
+        <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="No Comercial" />
+        <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="Compartir Igual" />
+      </div>
     </div>
   </footer>
 
@@ -148,17 +265,308 @@
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
   <script>
-    // Utilitats UI
+    const translations = {
+      ca: {
+        appName: "Generador Aleatori d'Exàmens",
+        languageLabel: "Idioma",
+        themeLabel: "Mode",
+        themeOptions: { light: "Mode clar", dark: "Mode fosc", system: "Seguir sistema" },
+        subtitle: "Penja la plantilla <span class=\"kbd\">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), descarregables en ZIP o directament.",
+        templateWord: "Plantilla Word",
+        templateExcel: "Plantilla Excel",
+        templateHint: "Les plantilles disponibles són orientatives i explicatives; pots utilitzar qualsevol plantilla pròpia (especialment si tens models oficials d'exàmens en Word) sempre que mantinguis els marcadors.",
+        inputConfig: "Configuració d'entrada",
+        labels: {
+          docx: "Plantilla d'examen en Word (<strong>.docx</strong>)",
+          package: "Nom base dels fitxers (opcional)",
+          xlsx: "Fitxer amb banc de preguntes (<strong>.xlsx</strong>)",
+          numVersions: "Quantes versions?",
+          orderMode: "Ordenació de preguntes",
+          limitToPlaceholders: "Utilitzar només els {PreguntaXX} presents a la plantilla",
+          alsoDirect: "També descarrega sense ZIP (Nom_all.pdf + Solucionari_Global.xlsx)"
+        },
+        hints: {
+          docx: "La plantilla ha de contenir els marcadors {NCodi} i {Pregunta01}..{Pregunta99} on vulguis inserir cada bloc de pregunta. En generar l'examen es respecta el format del document original (tipus de lletra, negretes, etc.).",
+          package: "S'utilitza per al ZIP, per al PDF combinat i per als exàmens individuals. Es convertiran els espais en _ i es retiraran caràcters especials.",
+          xlsx: "Fila 1: <em>encapçalaments lliures</em> (s'ignora). Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes"
+        },
+        order: {
+          keep: "Mantenir l'ordre de l'Excel",
+          shuffle: "Desordenar a cada versió"
+        },
+        actions: { generate: "Genera PDFs + Solucionari Global" },
+        progress: { title: "Progrés" },
+        outputsInfo: "Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>Nom_all.pdf</em> per al combinat. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.",
+        footer: {
+          credit: "Aplicació realitzada per <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> amb l'assistència de la IA.",
+          version: "Versió 1 · Octubre 2025"
+        },
+        status: {
+          ready: "Preparat",
+          processing: "Processant…",
+          generatingExam: "Generant {{name}} {{code}}…",
+          compressingZip: "Comprimint ZIP…",
+          done: "Fet ✅",
+          error: "Error"
+        },
+        log: {
+          readingExcel: "Llegint Excel…",
+          questionsFound: "S'han trobat {{count}} preguntes al banc.",
+          analyzingTemplate: "Analitzant plantilla DOCX…",
+          missingCode: "⚠️ A la plantilla no s'ha trobat {NCodi}.",
+          usingSlots: "S'utilitzaran {{count}} posicions de pregunta.",
+          version: "— Versió {{current}} / {{total}}",
+          code: "Codi: {{code}}",
+          examReady: "✔ {{fileName}}",
+          generatingSolutions: "Generant Solucionari Global…",
+          compilingAll: "Compilant All_Exams.pdf…",
+          done: "Tot llest!"
+        },
+        errors: {
+          missingDocx: "Falta la plantilla .docx",
+          missingXlsx: "Falta l'Excel amb les preguntes",
+          insufficientQuestions: "La plantilla requereix {{need}} preguntes però l'Excel només en té {{available}}.",
+          noValidQuestions: "No s'han trobat preguntes vàlides a l'Excel (recorda: fila 1 són encapçalaments).",
+          noMoreCodes: "No es poden generar més codis únics."
+        },
+        readme: `Aquest paquet s'ha generat des del navegador.
+
+Per evitar els avisos de Windows quan extragueu el ZIP:
+1) Clic dret sobre el ZIP → Propietats → marqueu "Desbloquejar" si surt.
+2) Llavors feu "Extreure tot".
+Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
+      },
+      es: {
+        appName: "Generador Aleatorio de Exámenes",
+        languageLabel: "Idioma",
+        themeLabel: "Modo",
+        themeOptions: { light: "Modo claro", dark: "Modo oscuro", system: "Seguir sistema" },
+        subtitle: "Sube la plantilla <span class=\"kbd\">.docx</span> (con {Pregunta01}…{Pregunta99} y {NCodi}) y el Excel con preguntas/respuestas. El sistema creará <em>n</em> versiones en PDF y un <strong>único solucionario global</strong> en formato tabla (PDF y Excel), descargables en ZIP o directamente.",
+        templateWord: "Plantilla Word",
+        templateExcel: "Plantilla Excel",
+        templateHint: "Las plantillas disponibles son orientativas y explicativas; puedes utilizar cualquier plantilla propia (especialmente si tienes modelos oficiales de exámenes en Word) siempre que mantengas los marcadores.",
+        inputConfig: "Configuración de entrada",
+        labels: {
+          docx: "Plantilla de examen en Word (<strong>.docx</strong>)",
+          package: "Nombre base de los archivos (opcional)",
+          xlsx: "Archivo con banco de preguntas (<strong>.xlsx</strong>)",
+          numVersions: "¿Cuántas versiones?",
+          orderMode: "Ordenación de preguntas",
+          limitToPlaceholders: "Usar solo los {PreguntaXX} presentes en la plantilla",
+          alsoDirect: "Descargar también sin ZIP (Nombre_all.pdf + Solucionario_Global.xlsx)"
+        },
+        hints: {
+          docx: "La plantilla debe contener los marcadores {NCodi} y {Pregunta01}..{Pregunta99} donde quieras insertar cada bloque de pregunta. Al generar el examen se respeta el formato del documento original (tipografía, negritas, etc.).",
+          package: "Se utiliza para el ZIP, para el PDF combinado y para los exámenes individuales. Los espacios se convertirán en _ y se eliminarán caracteres especiales.",
+          xlsx: "Fila 1: <em>encabezados libres</em> (se ignora). Columna A: enunciado · Columna B: respuesta correcta · Columnas C..: incorrectas"
+        },
+        order: {
+          keep: "Mantener el orden del Excel",
+          shuffle: "Desordenar en cada versión"
+        },
+        actions: { generate: "Generar PDFs + Solucionario Global" },
+        progress: { title: "Progreso" },
+        outputsInfo: "Salidas: <em>Exam_XXXXX.pdf</em> (o <em>Nombre_XXXXX.pdf</em> si se indica un nombre), un único <em>Solucionario_Global</em> (PDF y Excel) y <em>Nombre_all.pdf</em> para el combinado. Puedes descargar todo en ZIP o solo los archivos combinados. Para compatibilidad con Windows, se usan nombres ASCII y ZIP sin acentos.",
+        footer: {
+          credit: "Aplicación realizada por <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> con la asistencia de la IA.",
+          version: "Versión 1 · Octubre 2025"
+        },
+        status: {
+          ready: "Listo",
+          processing: "Procesando…",
+          generatingExam: "Generando {{name}} {{code}}…",
+          compressingZip: "Comprimiendo ZIP…",
+          done: "Hecho ✅",
+          error: "Error"
+        },
+        log: {
+          readingExcel: "Leyendo Excel…",
+          questionsFound: "Se encontraron {{count}} preguntas en el banco.",
+          analyzingTemplate: "Analizando plantilla DOCX…",
+          missingCode: "⚠️ En la plantilla no se encontró {NCodi}.",
+          usingSlots: "Se utilizarán {{count}} posiciones de pregunta.",
+          version: "— Versión {{current}} / {{total}}",
+          code: "Código: {{code}}",
+          examReady: "✔ {{fileName}}",
+          generatingSolutions: "Generando Solucionario Global…",
+          compilingAll: "Compilando All_Exams.pdf…",
+          done: "¡Todo listo!"
+        },
+        errors: {
+          missingDocx: "Falta la plantilla .docx",
+          missingXlsx: "Falta el Excel con las preguntas",
+          insufficientQuestions: "La plantilla requiere {{need}} preguntas pero el Excel solo tiene {{available}}.",
+          noValidQuestions: "No se encontraron preguntas válidas en el Excel (recuerda: la fila 1 son encabezados).",
+          noMoreCodes: "No se pueden generar más códigos únicos."
+        },
+        readme: `Este paquete se ha generado desde el navegador.
+
+Para evitar avisos de Windows al extraer el ZIP:
+1) Clic derecho sobre el ZIP → Propiedades → marca "Desbloquear" si aparece.
+2) Después pulsa "Extraer todo".
+Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
+      },
+      en: {
+        appName: "Random Exam Generator",
+        languageLabel: "Language",
+        themeLabel: "Mode",
+        themeOptions: { light: "Light mode", dark: "Dark mode", system: "Follow system" },
+        subtitle: "Upload the <span class=\"kbd\">.docx</span> template (with {Pregunta01}…{Pregunta99} and {NCodi}) and the Excel file with questions/answers. The tool will create <em>n</em> PDF versions plus a <strong>single global answer key</strong> as a table (PDF and Excel), ready to download in a ZIP or directly.",
+        templateWord: "Word template",
+        templateExcel: "Excel template",
+        templateHint: "The available templates are illustrative; feel free to use your own (especially official Word exam layouts) as long as you keep the placeholders.",
+        inputConfig: "Input configuration",
+        labels: {
+          docx: "Exam template in Word (<strong>.docx</strong>)",
+          package: "Base name for files (optional)",
+          xlsx: "Question bank file (<strong>.xlsx</strong>)",
+          numVersions: "How many versions?",
+          orderMode: "Question ordering",
+          limitToPlaceholders: "Use only the {PreguntaXX} placeholders found in the template",
+          alsoDirect: "Also download without ZIP (Name_all.pdf + Solucionari_Global.xlsx)"
+        },
+        hints: {
+          docx: "The template must include the placeholders {NCodi} and {Pregunta01}..{Pregunta99} where each question block should appear. When generating the exam we keep the original formatting (fonts, bold, etc.).",
+          package: "Used for the ZIP, the combined PDF and individual exams. Spaces will become _ and special characters are removed.",
+          xlsx: "Row 1: <em>free headers</em> (ignored). Column A: statement · Column B: correct answer · Columns C..: incorrect ones"
+        },
+        order: {
+          keep: "Keep Excel order",
+          shuffle: "Shuffle for each version"
+        },
+        actions: { generate: "Generate PDFs + Global Answer Key" },
+        progress: { title: "Progress" },
+        outputsInfo: "Outputs: <em>Exam_XXXXX.pdf</em> (or <em>Name_XXXXX.pdf</em> if a base name is given), a single <em>Solucionari_Global</em> (PDF and Excel) and <em>Name_all.pdf</em> for the combined file. Download everything as a ZIP or just the combined files. For Windows compatibility, ASCII names and ZIPs without accents are used.",
+        footer: {
+          credit: "Application created by <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> with AI assistance.",
+          version: "Version 1 · October 2025"
+        },
+        status: {
+          ready: "Ready",
+          processing: "Processing…",
+          generatingExam: "Generating {{name}} {{code}}…",
+          compressingZip: "Compressing ZIP…",
+          done: "Done ✅",
+          error: "Error"
+        },
+        log: {
+          readingExcel: "Reading Excel…",
+          questionsFound: "Found {{count}} questions in the bank.",
+          analyzingTemplate: "Analysing DOCX template…",
+          missingCode: "⚠️ The template does not contain {NCodi}.",
+          usingSlots: "Using {{count}} question slots.",
+          version: "— Version {{current}} / {{total}}",
+          code: "Code: {{code}}",
+          examReady: "✔ {{fileName}}",
+          generatingSolutions: "Generating Global Answer Key…",
+          compilingAll: "Compiling All_Exams.pdf…",
+          done: "All set!"
+        },
+        errors: {
+          missingDocx: "Missing the .docx template",
+          missingXlsx: "Missing the Excel question bank",
+          insufficientQuestions: "The template needs {{need}} questions but the Excel only has {{available}}.",
+          noValidQuestions: "No valid questions found in the Excel (remember: row 1 is headers).",
+          noMoreCodes: "No more unique codes can be generated."
+        },
+        readme: `This package was generated in the browser.
+
+To avoid Windows warnings when extracting the ZIP:
+1) Right-click the ZIP → Properties → tick "Unblock" if visible.
+2) Then choose "Extract All".
+If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
+      }
+    };
+
     const bar = document.getElementById('bar');
     const logEl = document.getElementById('log');
     const statusPill = document.getElementById('statusPill');
-    function log(msg){
-      const prefix = logEl.textContent ? '\n' : '';
-      logEl.textContent += `${prefix}• ${msg}`;
+    const languageButtons = document.querySelectorAll('.language-switch button');
+    const themeSelect = document.getElementById('themeSelect');
+    const wordTemplateLink = document.getElementById('wordTemplateLink');
+    const excelTemplateLink = document.getElementById('excelTemplateLink');
+    const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+    const i18nElements = document.querySelectorAll('[data-i18n]');
+
+    let currentLang = localStorage.getItem('app-language') || 'ca';
+    if(!translations[currentLang]) currentLang = 'ca';
+
+    let statusState = { key: 'ready', vars: {} };
+
+    function formatString(str, vars = {}){
+      return str.replace(/{{(.*?)}}/g, (_, key)=>{
+        const value = vars[key.trim()];
+        return value !== undefined ? value : '';
+      });
+    }
+
+    function t(path, vars){
+      const segments = path.split('.');
+      let value = translations[currentLang];
+      for(const segment of segments){
+        if(value && Object.prototype.hasOwnProperty.call(value, segment)){
+          value = value[segment];
+        }else{
+          value = '';
+          break;
+        }
+      }
+      if(typeof value === 'string') return formatString(value, vars || {});
+      return value;
+    }
+
+    function refreshText(){
+      document.title = translations[currentLang].appName;
+      document.documentElement.lang = currentLang;
+      i18nElements.forEach(el=>{
+        const key = el.getAttribute('data-i18n');
+        if(!key) return;
+        const type = el.getAttribute('data-i18n-type');
+        const value = t(key);
+        if(type === 'html'){
+          el.innerHTML = value;
+        } else {
+          el.textContent = value;
+        }
+      });
+      // Update select options text
+      Array.from(themeSelect.options).forEach(opt=>{
+        const optKey = opt.value;
+        const label = translations[currentLang].themeOptions[optKey];
+        if(label) opt.textContent = label;
+      });
+      // Update language buttons active state label (text remains static as codes)
+      refreshStatusText();
+    }
+
+    function refreshStatusText(){
+      const key = statusState.key;
+      const vars = statusState.vars || {};
+      const statusText = translations[currentLang].status[key] || '';
+      statusPill.textContent = formatString(statusText, vars);
+    }
+
+    function setStatus(key, vars){
+      statusState = { key, vars: vars || {} };
+      refreshStatusText();
+    }
+
+    function appendLog(message){
+      const prefix = logEl.textContent ? '\\n' : '';
+      logEl.textContent += `${prefix}• ${message}`;
       logEl.scrollTop = logEl.scrollHeight;
     }
-    function setProgress(p){ bar.style.width = Math.max(0, Math.min(100, p)) + '%'; }
-    function setStatus(s){ statusPill.textContent = s; }
+
+    function logMessage(key, vars){
+      const strings = translations[currentLang].log;
+      const template = strings && strings[key];
+      if(template){
+        appendLog(formatString(template, vars || {}));
+      } else {
+        appendLog(key);
+      }
+    }
 
     function sanitizeFileName(name){
       if(!name) return '';
@@ -170,46 +578,42 @@
         .replace(/^_+|_+$/g, '');
     }
 
-    // Charset per codis sense confusió
-    const CODE_CHARS = 'ABCDEFGHJKMNPQRTUVWXYZ2346789'; // exclou O, I, L, S, 0,1,5
+    const CODE_CHARS = 'ABCDEFGHJKMNPQRTUVWXYZ2346789';
     function makeCode(len=5, used=new Set()){
       let c; let tries=0;
       do{
         c = Array.from({length:len}, ()=> CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
-        tries++; if(tries>10000) throw new Error('No es poden generar més codis únics.');
+        tries++; if(tries>10000) throw new Error(translations[currentLang].errors.noMoreCodes);
       } while(used.has(c));
       used.add(c); return c;
     }
 
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 
-    // Llegeix l'Excel -> [{statement, correct, incorrects:[..]}]
     async function parseExcel(file){
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data, {type:'array'});
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false});
-      if(!rows || rows.length < 2) throw new Error('El full necessita com a mínim una fila d\'encapçalament i una fila amb dades.');
+      if(!rows || rows.length < 2) throw new Error(translations[currentLang].errors.noValidQuestions);
       const dataRows = rows.slice(1);
       const items = [];
       for(const r of dataRows){
         if(!r || r.length===0) continue;
-        if(!r[0]) continue; // sense enunciat
+        if(!r[0]) continue;
         const statement = String(r[0]).trim();
         const correct = (r[1]!==undefined && r[1]!==null)? String(r[1]).trim() : '';
         const incorrects = r.slice(2).map(x=> x==null? '' : String(x).trim()).filter(x=> x.length>0);
         if(!statement || !correct){ continue; }
         items.push({statement, correct, incorrects});
       }
-      if(items.length===0) throw new Error('No s\'han trobat preguntes vàlides a l\'Excel (recorda: fila 1 són encapçalaments).');
+      if(items.length===0) throw new Error(translations[currentLang].errors.noValidQuestions);
       return items;
     }
 
-    // Extreu placeholders presents a la plantilla DOCX
     async function extractTemplateHtml(file){
       const arrayBuffer = await file.arrayBuffer();
       const { value: html } = await mammoth.convertToHtml({ arrayBuffer }, { styleMap: [] });
-      // Detecta placeholders sense regex complexes
       const questionSlots = [];
       for(let i=1;i<=99;i++){
         const key = String(i).padStart(2,'0');
@@ -219,7 +623,6 @@
       return { html, hasCode, questionSlots };
     }
 
-    // Construeix el bloc HTML per a una pregunta amb opcions barrejades
     function renderQA(i, q){
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       let out = `<div class="q" style="margin:12px 0 16px">`+
@@ -229,7 +632,7 @@
       out += `</div></div>`; return out;
     }
 
-    function escapeHtml(s){ return s.replace(/[&<>\"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c])); }
+    function escapeHtml(s){ return s.replace(/[&<>"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
     async function htmlToPdfBlob(html, filenameHint){
       const container = document.createElement('div');
@@ -241,12 +644,85 @@
       const opt = { margin: [10,10,10,10], filename: filenameHint, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
       const pdf = await html2pdf().set(opt).from(container).outputPdf('blob');
       document.body.removeChild(container);
-      return pdf; // Blob
+      return pdf;
     }
+
+    function updateTemplateLinks(){
+      const langSuffix = `_${currentLang}`;
+      wordTemplateLink.href = `templates/exam-template${langSuffix}.docx`;
+      excelTemplateLink.href = `templates/questions-template${langSuffix}.xlsx`;
+    }
+
+    function updateLanguageButtons(){
+      languageButtons.forEach(btn=>{
+        if(btn.dataset.lang === currentLang){
+          btn.classList.add('is-active');
+        } else {
+          btn.classList.remove('is-active');
+        }
+      });
+    }
+
+    function updateThemeSelect(){
+      const pref = document.documentElement.getAttribute('data-theme-mode') || 'system';
+      themeSelect.value = pref;
+    }
+
+    languageButtons.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const lang = btn.dataset.lang;
+        if(!lang || lang === currentLang) return;
+        currentLang = translations[lang] ? lang : 'ca';
+        localStorage.setItem('app-language', currentLang);
+        refreshText();
+        updateTemplateLinks();
+        updateLanguageButtons();
+      });
+    });
+
+    themeSelect.addEventListener('change', ()=>{
+      const value = themeSelect.value;
+      localStorage.setItem('theme-preference', value);
+      document.documentElement.setAttribute('data-theme-mode', value);
+      applyTheme();
+    });
+
+    function applyTheme(){
+      const pref = document.documentElement.getAttribute('data-theme-mode') || 'system';
+      const prefersDark = systemThemeQuery ? systemThemeQuery.matches : false;
+      const resolved = pref === 'system' ? (prefersDark ? 'dark' : 'light') : pref;
+      document.documentElement.setAttribute('data-theme', resolved);
+      if(systemThemeQuery){
+        systemThemeQuery.removeEventListener?.('change', handleSystemThemeChange);
+        if(pref === 'system'){
+          systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+        }
+      }
+    }
+
+    function handleSystemThemeChange(){
+      const pref = document.documentElement.getAttribute('data-theme-mode') || 'system';
+      if(pref === 'system'){
+        applyTheme();
+      }
+    }
+
+    function initTheme(){
+      applyTheme();
+      updateThemeSelect();
+    }
+
+    refreshText();
+    updateTemplateLinks();
+    updateLanguageButtons();
+    initTheme();
+    setStatus('ready');
+
+    function setProgress(p){ bar.style.width = Math.max(0, Math.min(100, p)) + '%'; }
 
     document.getElementById('runBtn').addEventListener('click', async ()=>{
       try{
-        setStatus('Processant…'); setProgress(0); logEl.textContent='';
+        setStatus('processing'); setProgress(0); logEl.textContent='';
         const docxFile = document.getElementById('docxInput').files[0];
         const xlsxFile = document.getElementById('xlsxInput').files[0];
         const packageInput = document.getElementById('packageName');
@@ -256,49 +732,45 @@
         const baseName = hasCustomBase ? sanitizedBase : '';
         const combinedPdfName = hasCustomBase ? `${baseName}_all.pdf` : 'All_Exams.pdf';
         const zipName = hasCustomBase ? `${baseName}.zip` : 'exams_and_solutions.zip';
-        if(!docxFile) throw new Error('Falta la plantilla .docx');
-        if(!xlsxFile) throw new Error('Falta l\'Excel amb les preguntes');
+        if(!docxFile) throw new Error(translations[currentLang].errors.missingDocx);
+        if(!xlsxFile) throw new Error(translations[currentLang].errors.missingXlsx);
 
         const N = Math.max(1, Math.min(200, parseInt(document.getElementById('numVersions').value || '1', 10)));
-        const orderMode = document.getElementById('orderMode').value; // keep | shuffle
+        const orderMode = document.getElementById('orderMode').value;
         const useOnlyPlaceholders = document.getElementById('limitToPlaceholders').checked;
         const alsoDirect = (document.getElementById('alsoDirect') && document.getElementById('alsoDirect').checked) || false;
 
-        log('Llegint Excel…');
+        logMessage('readingExcel');
         const bank = await parseExcel(xlsxFile);
-        log(`S'han trobat ${bank.length} preguntes al banc.`);
+        logMessage('questionsFound', { count: bank.length });
 
-        log('Analitzant plantilla DOCX…');
+        logMessage('analyzingTemplate');
         const tpl = await extractTemplateHtml(docxFile);
-        if(!tpl.hasCode) log('⚠️ A la plantilla no s\'ha trobat {NCodi}.');
+        if(!tpl.hasCode) logMessage('missingCode');
         const slots = useOnlyPlaceholders && tpl.questionSlots.length>0
           ? tpl.questionSlots.map(n=> parseInt(n,10))
           : Array.from({length: Math.min(99, bank.length)}, (_,i)=> i+1);
         const need = slots.length;
-        if(bank.length < need) throw new Error(`La plantilla requereix ${need} preguntes però l\'Excel només en té ${bank.length}.`);
-        log(`S'utilitzaran ${need} posicions de pregunta.`);
+        if(bank.length < need) throw new Error(formatString(translations[currentLang].errors.insufficientQuestions, { need, available: bank.length }));
+        logMessage('usingSlots', { count: need });
 
-        // Preparació
         const usedCodes = new Set();
-        const solutionsMatrix = []; // [code, P01..Pnn]
+        const solutionsMatrix = [];
         const headers = Array.from({length: need}, (_,i)=> 'P'+String(i+1).padStart(2,'0'));
         const { PDFDocument } = PDFLib;
         const combinedPdf = await PDFDocument.create();
-        const A4 = [595.28, 841.89]; // punts A4
+        const A4 = [595.28, 841.89];
         let zip = null; if(!alsoDirect){ zip = new JSZip(); }
 
         for(let v=1; v<=N; v++){
           setProgress(Math.round(((v-1)/N)*80));
-          log(`
-— Versió ${v} / ${N}`);
+          logMessage('version', { current: v, total: N });
           const code = makeCode(5, usedCodes);
-          log(`Codi: ${code}`);
+          logMessage('code', { code });
 
-          // Selecció i ordre de preguntes
           let questions = bank.slice(0, need);
           if(orderMode==='shuffle'){ questions = shuffle(questions.slice()); }
 
-          // Prepara Q&A per a renderitzar i el solucionari
           const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
           const solution = [];
           const renderedBlocks = [];
@@ -311,7 +783,6 @@
           });
           solutionsMatrix.push([code, ...solution]);
 
-          // Crea HTML de l'examen
           let html = tpl.html;
           html = html.split('{NCodi}').join(code);
           if(tpl.questionSlots.length>0){
@@ -324,25 +795,22 @@
           }
           html = `<div style="font-family:Times New Roman,serif;color:#000">${html}</div>`;
 
-          // Genera PDF de l'examen
           const examFileName = hasCustomBase ? `${baseName}_${code}.pdf` : `Exam_${code}.pdf`;
-          setStatus(`Generant ${hasCustomBase ? baseName : 'Exam'} ${code}…`);
+          const nameLabel = hasCustomBase ? baseName : 'Exam';
+          setStatus('generatingExam', { name: nameLabel, code });
           const examPdf = await htmlToPdfBlob(html, examFileName);
           if(zip){ zip.file(examFileName, examPdf, {binary:true}); }
 
-
-          // Afegeix al PDF combinat i garanteix pàgines parelles
           const examBytes = await examPdf.arrayBuffer();
           const examDoc = await PDFDocument.load(examBytes);
           const copied = await combinedPdf.copyPages(examDoc, examDoc.getPageIndices());
           copied.forEach(p=> combinedPdf.addPage(p));
           if(examDoc.getPageCount() % 2 === 1){ combinedPdf.addPage(A4); }
 
-          log(`✔ ${examFileName}`);
+          logMessage('examReady', { fileName: examFileName });
         }
 
-        // Solucionari Global (XLSX + PDF)
-        log('Generant Solucionari Global…');
+        logMessage('generatingSolutions');
         const aoa = [['Codi', ...headers], ...solutionsMatrix];
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -350,43 +818,34 @@
         const wbArray = XLSX.write(wb, {bookType:'xlsx', type:'array'});
 
         const headerHtml = ['<th style="text-align:left">Codi</th>', ...headers.map(h=>`<th>${h}</th>`)].join('');
-        const rowsHtml = solutionsMatrix.map(row=>`<tr>${['<td style="font-weight:700">'+row[0]+'</td>', ...row.slice(1).map(v=>'<td>'+v+'</td>')].join('')}</tr>`).join('');
+        const rowsHtml = solutionsMatrix.map(row=>`<tr>${['<td style="font-weight:700">'+row[0]+'</td>', ...row.slice(1).map(v=>'<'+'td>'+v+'</td>')].join('')}</tr>`).join('');
         const solGlobalHtml = `<div style="font-family:Times New Roman,serif;color:#000">`+
                               `<h2>Solucionari Global</h2>`+
                               `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse">`+
                               `<tr>${headerHtml}</tr>${rowsHtml}</table></div>`;
         const solGlobalPdf = await htmlToPdfBlob(solGlobalHtml, 'Solucionari_Global.pdf');
 
-        // Tanca i desa All_Exams
-        log('Compilant All_Exams.pdf…');
+        logMessage('compilingAll');
         const allPdfBytes = await combinedPdf.save();
         const allPdf = new Blob([allPdfBytes], {type:'application/pdf'});
 
         if(alsoDirect){
-          // Només baixades directes
           saveAs(allPdf, combinedPdfName);
           const xlsxBlob = new Blob([wbArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
           saveAs(xlsxBlob, 'Solucionari_Global.xlsx');
         } else {
-          // ZIP amb tot
-          setStatus('Comprimint ZIP…'); setProgress(90);
+          setStatus('compressingZip'); setProgress(90);
           zip.file(combinedPdfName, allPdf, {binary:true});
           zip.file('Solucionari_Global.xlsx', wbArray);
           zip.file('Solucionari_Global.pdf', solGlobalPdf, {binary:true});
-          const readmeText = `Aquest paquet s'ha generat des del navegador.
-
-Per evitar els avisos de Windows quan extragueu el ZIP:
-1) Clic dret sobre el ZIP → Propietats → marqueu "Desbloquejar" si surt.
-2) Llavors feu "Extreure tot".
-Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`;
-          zip.file('README.txt', readmeText);
+          zip.file('README.txt', translations[currentLang].readme);
           const zipBlob = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
           saveAs(zipBlob, zipName);
         }
 
-        setProgress(100); setStatus('Fet ✅'); log('Tot llest!');
+        setProgress(100); setStatus('done'); logMessage('done');
 
-      }catch(err){ console.error(err); setStatus('Error'); log('❌ ' + (err && err.message? err.message : String(err))); }
+      }catch(err){ console.error(err); setStatus('error'); appendLog(`❌ ${err && err.message? err.message : String(err)}`); }
     });
   </script>
 </body>
