@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" type="image/x-icon" href="/src/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="src/favicon.ico" />
+  <link rel="icon" type="image/png" href="src/favicon.png" />
   <title>Generador Aleatori d'Exàmens</title>
   <style>
     :root{
@@ -16,7 +17,8 @@
                        var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
     a{color:var(--accent)}
     .wrap{max-width:1100px;margin:40px auto;padding:0 18px}
-    .title{font-size:32px;line-height:1.1;margin:0 0 6px;font-weight:800;letter-spacing:.2px}
+    .title{display:flex;align-items:center;gap:12px;font-size:32px;line-height:1.1;margin:0 0 6px;font-weight:800;letter-spacing:.2px}
+    .title-logo{width:40px;height:40px;flex:0 0 40px;border-radius:12px}
     .subtitle{margin:0 0 18px;color:var(--muted)}
     .templates{margin:0 0 24px;display:flex;flex-wrap:wrap;gap:12px}
     .templates a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:#0e1931;border:1px solid rgba(255,255,255,.08);text-decoration:none;color:var(--ink);font-size:14px}
@@ -48,7 +50,10 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="title">Generador Aleatori d'Exàmens</div>
+    <div class="title">
+      <img src="src/favicon.png" alt="Logotip del generador" class="title-logo" />
+      <span>Generador Aleatori d'Exàmens</span>
+    </div>
 <div class="subtitle">Penja la plantilla <span class="kbd">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), descarregables en ZIP o directament.</div>
 
     <div class="templates">
@@ -119,9 +124,19 @@
   </div>
 
   <footer class="footer" style="margin-top:40px;text-align:center;color:var(--muted);font-size:12px">
-    <div>Desenvolupat per: <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a></div>
-    <div>Octubre 2025</div>
-    <div>Versió 1</div>
+    <div>Aplicació realitzada per <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a> amb l'assistència de la IA.</div>
+    <div>Versió 1 · Octubre 2025</div>
+    <div>
+      <a href="https://creativecommons.org">Generador Aleatori d'Exàmens</a> © 2025 by
+      <a href="https://creativecommons.org">aagust11@xtec.cat</a> is licensed under
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+    </div>
+    <div style="display:flex;justify-content:center;gap:.3em;margin-top:.4em">
+      <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="Creative Commons" style="max-width:1em;max-height:1em" />
+      <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="Reconeixement" style="max-width:1em;max-height:1em" />
+      <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="No Comercial" style="max-width:1em;max-height:1em" />
+      <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="Compartir Igual" style="max-width:1em;max-height:1em" />
+    </div>
   </footer>
 
   <!-- Lliberies CDN -->
