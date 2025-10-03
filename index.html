@@ -92,11 +92,13 @@
     .header-controls{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:flex-end}
     .control-group{display:flex;flex-direction:column;gap:6px;min-width:0}
     .control-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-    .language-switch{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--panel-border);border-radius:999px;padding:4px}
-    .language-switch button{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s}
-    .language-switch button.is-active{background:var(--accent);color:#fff;box-shadow:0 8px 18px rgba(64,131,255,.3)}
-    .theme-select{display:flex;align-items:center;gap:8px}
-    .theme-select select{background:var(--panel);border:1px solid var(--panel-border);color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer;min-width:140px}
+    .pill-switch{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--panel-border);border-radius:999px;padding:4px}
+    .pill-switch button{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:6px 14px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+    .pill-switch button.is-active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0b1220;box-shadow:0 10px 22px rgba(48,86,211,.35)}
+    .pill-switch button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .theme-switch{display:flex;align-items:center;gap:6px}
+    .theme-switch button svg{width:16px;height:16px}
+    .theme-switch button span{display:inline-flex;align-items:center;gap:6px}
     main.site-main{flex:1;width:100%}
     main.site-main .wrap{padding-top:32px;padding-bottom:48px}
     .subtitle{margin:0 0 18px;color:var(--muted);font-size:16px;line-height:1.6}
@@ -112,11 +114,19 @@
     .card .content{padding:20px}
     .input{display:flex;flex-direction:column;gap:8px;margin:12px 0}
     .row{display:flex;gap:10px;flex-wrap:wrap}
-    input[type="file"], input[type="number"], input[type="text"], select{width:100%;background:var(--input-bg);border:1px solid var(--input-border);color:var(--ink);padding:12px;border-radius:12px}
+    input[type="number"], input[type="text"], select{width:100%;background:var(--input-bg);border:1px solid var(--input-border);color:var(--ink);padding:12px;border-radius:12px}
     label{font-size:13px;color:var(--muted)}
     .btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;font-weight:700;color:#0b1220;background:linear-gradient(135deg,var(--accent),var(--accent-2));cursor:pointer;box-shadow:0 8px 18px rgba(64,131,255,.35);transition:transform .06s ease}
     .btn:active{transform:translateY(1px)}
     .pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill-bg);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--pill-text);font-weight:600}
+    .file-input{position:relative;display:flex;align-items:center;gap:12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:10px 12px;transition:border-color .2s ease,box-shadow .2s ease}
+    .file-input:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(48,86,211,.15)}
+    .file-input input[type="file"]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .file-trigger{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0b1220;font-weight:700;border-radius:10px;padding:10px 14px;cursor:pointer;box-shadow:0 8px 18px rgba(48,86,211,.35);transition:transform .06s ease,box-shadow .2s ease;white-space:nowrap}
+    .file-trigger:hover{box-shadow:0 10px 24px rgba(48,86,211,.4)}
+    .file-trigger:active{transform:translateY(1px)}
+    .file-trigger svg{width:16px;height:16px;fill:currentColor}
+    .file-name{flex:1;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .switch{display:flex;align-items:center;gap:10px}
     .switch input{accent-color:var(--accent)}
     .progress{height:12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:999px;overflow:hidden}
@@ -126,6 +136,7 @@
     .outputs-info{margin:28px 0 0;color:var(--muted);font-size:12px}
     footer.site-footer{margin-top:auto;background:var(--footer-bg);border-top:1px solid var(--panel-border);position:sticky;bottom:0;z-index:20}
     .footer-inner{padding:16px 0;text-align:center;color:var(--muted);font-size:12px;display:flex;flex-direction:column;gap:6px}
+    .footer-cc{font-size:12px;color:var(--muted)}
     .footer-icons{display:flex;justify-content:center;gap:.3em;margin-top:.4em}
     .footer-icons img{max-width:1em;max-height:1em}
     .kbd{background:rgba(8,16,38,0.1);border:1px solid rgba(8,16,38,0.2);padding:2px 6px;border-radius:6px;font-size:12px}
@@ -148,19 +159,34 @@
       <div class="header-controls">
         <div class="control-group">
           <span class="control-label" data-i18n="languageLabel">Idioma</span>
-          <div class="language-switch" role="group" aria-label="Language selector">
+          <div class="pill-switch language-switch" role="group" aria-label="Language selector">
             <button type="button" data-lang="ca" class="is-active">CA</button>
             <button type="button" data-lang="es">ES</button>
             <button type="button" data-lang="en">EN</button>
           </div>
         </div>
-        <div class="control-group theme-select">
-          <label for="themeSelect" class="control-label" data-i18n="themeLabel">Mode</label>
-          <select id="themeSelect">
-            <option value="light">Mode clar</option>
-            <option value="dark">Mode fosc</option>
-            <option value="system">Seguir sistema</option>
-          </select>
+        <div class="control-group">
+          <span class="control-label" data-i18n="themeLabel">Mode</span>
+          <div class="pill-switch theme-switch" role="group" aria-label="Theme selector">
+            <button type="button" data-theme="light">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.25a4.75 4.75 0 1 1 0 9.5 4.75 4.75 0 0 1 0-9.5zm0-2a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 12 5.25zm0 17.5a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75zm9-7.75a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5a.75.75 0 0 1 .75.75zm-17.5 0a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5a.75.75 0 0 1 .75.75zm15.48 6.02a.75.75 0 0 1 0-1.06l.35-.35a.75.75 0 1 1 1.06 1.06l-.35.35a.75.75 0 0 1-1.06 0zm-13.52 0-.35-.35a.75.75 0 1 1 1.06-1.06l.35.35a.75.75 0 1 1-1.06 1.06zm13.52-13.52a.75.75 0 0 1 0-1.06l.35-.35a.75.75 0 1 1 1.06 1.06l-.35.35a.75.75 0 0 1-1.06 0zm-13.52 0-.35-.35A.75.75 0 1 1 6.06 3.5l.35.35A.75.75 0 1 1 5.35 4.9z"/></svg>
+                <span data-i18n="themeOptions.light">Mode clar</span>
+              </span>
+            </button>
+            <button type="button" data-theme="dark">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.25 4.02a.75.75 0 0 1 .84-.24 8.5 8.5 0 1 1-9.85 11.3.75.75 0 0 1 .92-.97 6.99 6.99 0 0 0 6.4-11.09.75.75 0 0 1-.31-.64z"/></svg>
+                <span data-i18n="themeOptions.dark">Mode fosc</span>
+              </span>
+            </button>
+            <button type="button" data-theme="system">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 5A2.75 2.75 0 0 1 7.5 2.25h9A2.75 2.75 0 0 1 19.25 5v14A2.75 2.75 0 0 1 16.5 21.75h-9A2.75 2.75 0 0 1 4.75 19V5zm1.5 1.5V19c0 .69.56 1.25 1.25 1.25H9v-5.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5.5h1.5A1.25 1.25 0 0 0 18.25 19V6.5h-12zM14 20.25v-4.75h-2v4.75h2zm-.75-14.5a1.75 1.75 0 1 1 0-3.5 1.75 1.75 0 0 1 0 3.5z"/></svg>
+                <span data-i18n="themeOptions.system">Seguir sistema</span>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -188,7 +214,14 @@
             <h3 data-i18n="inputConfig">Configuració d'entrada</h3>
             <div class="input">
               <label data-i18n="labels.docx" data-i18n-type="html">Plantilla d'examen en Word (<strong>.docx</strong>)</label>
-              <input type="file" id="docxInput" accept=".docx" />
+              <div class="file-input">
+                <input type="file" id="docxInput" accept=".docx" />
+                <label for="docxInput" class="file-trigger">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 1 3 3v3h3a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3V5a3 3 0 0 1 3-3zm0 1.5A1.5 1.5 0 0 0 10.5 5v3h3V5A1.5 1.5 0 0 0 12 3.5zM8.75 12a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5z"/></svg>
+                  <span data-i18n="fileInput.button">Tria un fitxer</span>
+                </label>
+                <span class="file-name" data-empty-i18n="fileInput.none">Cap fitxer seleccionat</span>
+              </div>
               <div class="hint" data-i18n="hints.docx" data-i18n-type="html">La plantilla ha de contenir els marcadors {NCodi} i {Pregunta01}..{Pregunta99} on vulguis inserir cada bloc de pregunta. En generar l'examen es respecta el format del document original (tipus de lletra, negretes, etc.).</div>
             </div>
             <div class="input">
@@ -198,7 +231,14 @@
             </div>
             <div class="input">
               <label data-i18n="labels.xlsx" data-i18n-type="html">Fitxer amb banc de preguntes (<strong>.xlsx</strong>)</label>
-              <input type="file" id="xlsxInput" accept=".xlsx,.xls" />
+              <div class="file-input">
+                <input type="file" id="xlsxInput" accept=".xlsx,.xls" />
+                <label for="xlsxInput" class="file-trigger">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 1 3 3v3h3a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3V5a3 3 0 0 1 3-3zm0 1.5A1.5 1.5 0 0 0 10.5 5v3h3V5A1.5 1.5 0 0 0 12 3.5zM9.05 12h1.79l1.16 1.93 1.18-1.93h1.72l-1.91 3 2.02 3h-1.79l-1.18-1.92L12.86 18H11.1l.95-1.5-.95-1.5h-2.05l.95 1.5-.95 1.5H8.21l2.02-3-1.18-1.93z"/></svg>
+                  <span data-i18n="fileInput.button">Tria un fitxer</span>
+                </label>
+                <span class="file-name" data-empty-i18n="fileInput.none">Cap fitxer seleccionat</span>
+              </div>
               <div class="hint" data-i18n="hints.xlsx" data-i18n-type="html">Fila 1: <em>encapçalaments lliures</em> (s'ignora). Columna A: enunciat · Columna B: resposta correcta · Columnes C..: incorrectes</div>
             </div>
             <div class="row">
@@ -240,19 +280,15 @@
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
-      <div data-i18n="footer.credit" data-i18n-type="html">Aplicació realitzada per <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a> amb l'assistència de la IA.</div>
-      <div data-i18n="footer.version">Versió 1 · Octubre 2025</div>
-      <div>
-        <a href="https://creativecommons.org">Generador Aleatori d'Exàmens</a> © 2025 by
-        <a href="https://creativecommons.org">aagust11@xtec.cat</a> is licensed under
-        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
-      </div>
+      <div data-i18n="footer.license" data-i18n-type="html">Generador Aleatori d'Exàmens © 2025 per <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a> amb l'assistència de la IA està llicenciat sota <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</div>
+      <div class="footer-cc" data-i18n="footer.ccLine">Creative Commons · Reconeixement · No Comercial · Compartir Igual</div>
       <div class="footer-icons">
         <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="Creative Commons" />
         <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="Reconeixement" />
         <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="No Comercial" />
         <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="Compartir Igual" />
       </div>
+      <div data-i18n="footer.version">Versió 1 · Octubre 2025</div>
     </div>
   </footer>
 
@@ -271,10 +307,13 @@
         languageLabel: "Idioma",
         themeLabel: "Mode",
         themeOptions: { light: "Mode clar", dark: "Mode fosc", system: "Seguir sistema" },
+        languageAriaLabel: "Selector d'idioma",
+        themeAriaLabel: "Selector de mode",
         subtitle: "Penja la plantilla <span class=\"kbd\">.docx</span> (amb {Pregunta01}…{Pregunta99} i {NCodi}) i l'Excel amb preguntes/respostes. El sistema crearà <em>n</em> versions en PDF i un <strong>únic solucionari global</strong> en format taula (PDF i Excel), descarregables en ZIP o directament.",
         templateWord: "Plantilla Word",
         templateExcel: "Plantilla Excel",
         templateHint: "Les plantilles disponibles són orientatives i explicatives; pots utilitzar qualsevol plantilla pròpia (especialment si tens models oficials d'exàmens en Word) sempre que mantinguis els marcadors.",
+        fileInput: { button: "Tria un fitxer", none: "Cap fitxer seleccionat" },
         inputConfig: "Configuració d'entrada",
         labels: {
           docx: "Plantilla d'examen en Word (<strong>.docx</strong>)",
@@ -298,7 +337,8 @@
         progress: { title: "Progrés" },
         outputsInfo: "Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>Nom_all.pdf</em> per al combinat. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.",
         footer: {
-          credit: "Aplicació realitzada per <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> amb l'assistència de la IA.",
+          license: "Generador Aleatori d'Exàmens © 2025 per <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> amb l'assistència de la IA està llicenciat sota <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
+          ccLine: "Creative Commons · Reconeixement · No Comercial · Compartir Igual",
           version: "Versió 1 · Octubre 2025"
         },
         status: {
@@ -341,10 +381,13 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
         languageLabel: "Idioma",
         themeLabel: "Modo",
         themeOptions: { light: "Modo claro", dark: "Modo oscuro", system: "Seguir sistema" },
+        languageAriaLabel: "Selector de idioma",
+        themeAriaLabel: "Selector de modo",
         subtitle: "Sube la plantilla <span class=\"kbd\">.docx</span> (con {Pregunta01}…{Pregunta99} y {NCodi}) y el Excel con preguntas/respuestas. El sistema creará <em>n</em> versiones en PDF y un <strong>único solucionario global</strong> en formato tabla (PDF y Excel), descargables en ZIP o directamente.",
         templateWord: "Plantilla Word",
         templateExcel: "Plantilla Excel",
         templateHint: "Las plantillas disponibles son orientativas y explicativas; puedes utilizar cualquier plantilla propia (especialmente si tienes modelos oficiales de exámenes en Word) siempre que mantengas los marcadores.",
+        fileInput: { button: "Elegir archivo", none: "Ningún archivo seleccionado" },
         inputConfig: "Configuración de entrada",
         labels: {
           docx: "Plantilla de examen en Word (<strong>.docx</strong>)",
@@ -368,7 +411,8 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
         progress: { title: "Progreso" },
         outputsInfo: "Salidas: <em>Exam_XXXXX.pdf</em> (o <em>Nombre_XXXXX.pdf</em> si se indica un nombre), un único <em>Solucionario_Global</em> (PDF y Excel) y <em>Nombre_all.pdf</em> para el combinado. Puedes descargar todo en ZIP o solo los archivos combinados. Para compatibilidad con Windows, se usan nombres ASCII y ZIP sin acentos.",
         footer: {
-          credit: "Aplicación realizada por <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> con la asistencia de la IA.",
+          license: "Generador Aleatorio de Exámenes © 2025 por <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> con la asistencia de la IA está bajo licencia <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
+          ccLine: "Creative Commons · Reconocimiento · No Comercial · Compartir Igual",
           version: "Versión 1 · Octubre 2025"
         },
         status: {
@@ -411,10 +455,13 @@ Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
         languageLabel: "Language",
         themeLabel: "Mode",
         themeOptions: { light: "Light mode", dark: "Dark mode", system: "Follow system" },
+        languageAriaLabel: "Language selector",
+        themeAriaLabel: "Theme selector",
         subtitle: "Upload the <span class=\"kbd\">.docx</span> template (with {Pregunta01}…{Pregunta99} and {NCodi}) and the Excel file with questions/answers. The tool will create <em>n</em> PDF versions plus a <strong>single global answer key</strong> as a table (PDF and Excel), ready to download in a ZIP or directly.",
         templateWord: "Word template",
         templateExcel: "Excel template",
         templateHint: "The available templates are illustrative; feel free to use your own (especially official Word exam layouts) as long as you keep the placeholders.",
+        fileInput: { button: "Choose file", none: "No file selected" },
         inputConfig: "Input configuration",
         labels: {
           docx: "Exam template in Word (<strong>.docx</strong>)",
@@ -438,7 +485,8 @@ Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
         progress: { title: "Progress" },
         outputsInfo: "Outputs: <em>Exam_XXXXX.pdf</em> (or <em>Name_XXXXX.pdf</em> if a base name is given), a single <em>Solucionari_Global</em> (PDF and Excel) and <em>Name_all.pdf</em> for the combined file. Download everything as a ZIP or just the combined files. For Windows compatibility, ASCII names and ZIPs without accents are used.",
         footer: {
-          credit: "Application created by <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> with AI assistance.",
+          license: "Random Exam Generator © 2025 by <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> with AI assistance is licensed under <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
+          ccLine: "Creative Commons · Attribution · NonCommercial · ShareAlike",
           version: "Version 1 · October 2025"
         },
         status: {
@@ -481,11 +529,19 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
     const bar = document.getElementById('bar');
     const logEl = document.getElementById('log');
     const statusPill = document.getElementById('statusPill');
-    const languageButtons = document.querySelectorAll('.language-switch button');
-    const themeSelect = document.getElementById('themeSelect');
+    const languageSwitch = document.querySelector('.language-switch');
+    const languageButtons = languageSwitch ? languageSwitch.querySelectorAll('button') : [];
+    const themeSwitch = document.querySelector('.theme-switch');
+    const themeButtons = themeSwitch ? themeSwitch.querySelectorAll('button') : [];
     const wordTemplateLink = document.getElementById('wordTemplateLink');
     const excelTemplateLink = document.getElementById('excelTemplateLink');
     const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    const fileInputGroups = Array.from(document.querySelectorAll('.file-input')).map(group=>{
+      const input = group.querySelector('input[type="file"]');
+      const name = group.querySelector('.file-name');
+      const emptyKey = name ? name.getAttribute('data-empty-i18n') : null;
+      return { group, input, name, emptyKey };
+    });
 
     const i18nElements = document.querySelectorAll('[data-i18n]');
 
@@ -516,6 +572,21 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
       return value;
     }
 
+    function updateFileInputNames(){
+      fileInputGroups.forEach(({ input, name, emptyKey })=>{
+        if(!name) return;
+        if(input && input.files && input.files.length){
+          const files = Array.from(input.files).map(file=> file.name).join(', ');
+          name.textContent = files;
+          name.setAttribute('title', files);
+        } else if(emptyKey){
+          const placeholder = t(emptyKey);
+          name.textContent = placeholder;
+          name.setAttribute('title', placeholder);
+        }
+      });
+    }
+
     function refreshText(){
       document.title = translations[currentLang].appName;
       document.documentElement.lang = currentLang;
@@ -530,12 +601,13 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
           el.textContent = value;
         }
       });
-      // Update select options text
-      Array.from(themeSelect.options).forEach(opt=>{
-        const optKey = opt.value;
-        const label = translations[currentLang].themeOptions[optKey];
-        if(label) opt.textContent = label;
-      });
+      if(languageSwitch){
+        languageSwitch.setAttribute('aria-label', t('languageAriaLabel'));
+      }
+      if(themeSwitch){
+        themeSwitch.setAttribute('aria-label', t('themeAriaLabel'));
+      }
+      updateFileInputNames();
       // Update language buttons active state label (text remains static as codes)
       refreshStatusText();
     }
@@ -657,15 +729,25 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
       languageButtons.forEach(btn=>{
         if(btn.dataset.lang === currentLang){
           btn.classList.add('is-active');
+          btn.setAttribute('aria-pressed', 'true');
         } else {
           btn.classList.remove('is-active');
+          btn.setAttribute('aria-pressed', 'false');
         }
       });
     }
 
-    function updateThemeSelect(){
+    function updateThemeButtons(){
       const pref = document.documentElement.getAttribute('data-theme-mode') || 'system';
-      themeSelect.value = pref;
+      themeButtons.forEach(btn=>{
+        if(btn.dataset.theme === pref){
+          btn.classList.add('is-active');
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.classList.remove('is-active');
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
     }
 
     languageButtons.forEach(btn=>{
@@ -680,11 +762,20 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
       });
     });
 
-    themeSelect.addEventListener('change', ()=>{
-      const value = themeSelect.value;
-      localStorage.setItem('theme-preference', value);
-      document.documentElement.setAttribute('data-theme-mode', value);
-      applyTheme();
+    themeButtons.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const value = btn.dataset.theme;
+        if(!value) return;
+        localStorage.setItem('theme-preference', value);
+        document.documentElement.setAttribute('data-theme-mode', value);
+        applyTheme();
+        updateThemeButtons();
+      });
+    });
+
+    fileInputGroups.forEach(({ input })=>{
+      if(!input) return;
+      input.addEventListener('change', updateFileInputNames);
     });
 
     function applyTheme(){
@@ -709,7 +800,7 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
 
     function initTheme(){
       applyTheme();
-      updateThemeSelect();
+      updateThemeButtons();
     }
 
     refreshText();
