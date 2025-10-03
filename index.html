@@ -135,9 +135,9 @@
     .hint{font-size:12px;color:var(--muted)}
     .outputs-info{margin:28px 0 0;color:var(--muted);font-size:12px}
     footer.site-footer{margin-top:auto;background:var(--footer-bg);border-top:1px solid var(--panel-border);position:sticky;bottom:0;z-index:20}
-    .footer-inner{padding:16px 0;text-align:center;color:var(--muted);font-size:12px;display:flex;flex-direction:column;gap:6px}
-    .footer-cc{font-size:12px;color:var(--muted)}
-    .footer-icons{display:flex;justify-content:center;gap:.3em;margin-top:.4em}
+    .footer-inner{padding:16px 0;color:var(--muted);font-size:12px;display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center}
+    .footer-meta{display:flex;align-items:center;justify-content:center;gap:3rem;flex-wrap:wrap}
+    .footer-icons{display:flex;gap:.3em}
     .footer-icons img{max-width:1em;max-height:1em}
     .kbd{background:rgba(8,16,38,0.1);border:1px solid rgba(8,16,38,0.2);padding:2px 6px;border-radius:6px;font-size:12px}
     :root[data-theme="dark"] .kbd{background:#081026;border:1px solid rgba(255,255,255,0.15)}
@@ -257,7 +257,7 @@
             <div class="row">
               <label class="switch"><input type="checkbox" id="limitToPlaceholders" checked /> <span data-i18n="labels.limitToPlaceholders">Utilitzar només els {PreguntaXX} presents a la plantilla</span></label>
             </div>
-            <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> <span data-i18n="labels.alsoDirect">També descarrega sense ZIP (Nom_all.pdf + Solucionari_Global.xlsx)</span></label></div>
+            <div class="row"><label class="switch"><input type="checkbox" id="alsoDirect" /> <span data-i18n="labels.alsoDirect">Descarrega només Nom_all.pdf + Solucionari_Global.xlsx</span></label></div>
             <div class="row" style="margin-top:8px">
               <button class="btn" id="runBtn" data-i18n="actions.generate">Genera PDFs + Solucionari Global</button>
               <span class="pill" id="statusPill">Preparat</span>
@@ -281,12 +281,14 @@
   <footer class="site-footer">
     <div class="wrap footer-inner">
       <div data-i18n="footer.license" data-i18n-type="html">Generador Aleatori d'Exàmens © 2025 per <a href="mailto:aagust11@xtec.cat">aagust11@xtec.cat</a> amb l'assistència de la IA està llicenciat sota <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</div>
-      <!-- <div class="footer-cc" data-i18n="footer.ccLine">Creative Commons · Reconeixement · No Comercial · Compartir Igual</div> -->
-      <div class="footer-icons">
-        <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="Creative Commons" />
-        <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="Reconeixement" />
-        <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="No Comercial" />
-        <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="Compartir Igual" />
+      <div class="footer-meta">
+        <div data-i18n="footer.version">Versió 1 · Octubre 2025</div>
+        <div class="footer-icons">
+          <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="Creative Commons" />
+          <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="Reconeixement" />
+          <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="No Comercial" />
+          <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="Compartir Igual" />
+        </div>
       </div>
       <div data-i18n="footer.version">Versió 1 · Octubre 2025</div>
     </div>
@@ -322,7 +324,7 @@
           numVersions: "Quantes versions?",
           orderMode: "Ordenació de preguntes",
           limitToPlaceholders: "Utilitzar només els {PreguntaXX} presents a la plantilla",
-          alsoDirect: "També descarrega sense ZIP (Nom_all.pdf + Solucionari_Global.xlsx)"
+          alsoDirect: "Descarrega només Nom_all.pdf + Solucionari_Global.xlsx"
         },
         hints: {
           docx: "La plantilla ha de contenir els marcadors {NCodi} i {Pregunta01}..{Pregunta99} on vulguis inserir cada bloc de pregunta. En generar l'examen es respecta el format del document original (tipus de lletra, negretes, etc.).",
@@ -338,7 +340,6 @@
         outputsInfo: "Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>Nom_all.pdf</em> per al combinat. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.",
         footer: {
           license: "Generador Aleatori d'Exàmens © 2025 per <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> amb l'assistència de la IA està llicenciat sota <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
-          ccLine: "Creative Commons · Reconeixement · No Comercial · Compartir Igual",
           version: "Versió 1 · Octubre 2025"
         },
         status: {
@@ -396,7 +397,7 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
           numVersions: "¿Cuántas versiones?",
           orderMode: "Ordenación de preguntas",
           limitToPlaceholders: "Usar solo los {PreguntaXX} presentes en la plantilla",
-          alsoDirect: "Descargar también sin ZIP (Nombre_all.pdf + Solucionario_Global.xlsx)"
+          alsoDirect: "Descarga solo Nombre_all.pdf + Solucionario_Global.xlsx"
         },
         hints: {
           docx: "La plantilla debe contener los marcadores {NCodi} y {Pregunta01}..{Pregunta99} donde quieras insertar cada bloque de pregunta. Al generar el examen se respeta el formato del documento original (tipografía, negritas, etc.).",
@@ -412,7 +413,6 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
         outputsInfo: "Salidas: <em>Exam_XXXXX.pdf</em> (o <em>Nombre_XXXXX.pdf</em> si se indica un nombre), un único <em>Solucionario_Global</em> (PDF y Excel) y <em>Nombre_all.pdf</em> para el combinado. Puedes descargar todo en ZIP o solo los archivos combinados. Para compatibilidad con Windows, se usan nombres ASCII y ZIP sin acentos.",
         footer: {
           license: "Generador Aleatorio de Exámenes © 2025 por <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> con la asistencia de la IA está bajo licencia <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
-          ccLine: "Creative Commons · Reconocimiento · No Comercial · Compartir Igual",
           version: "Versión 1 · Octubre 2025"
         },
         status: {
@@ -470,7 +470,7 @@ Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
           numVersions: "How many versions?",
           orderMode: "Question ordering",
           limitToPlaceholders: "Use only the {PreguntaXX} placeholders found in the template",
-          alsoDirect: "Also download without ZIP (Name_all.pdf + Solucionari_Global.xlsx)"
+          alsoDirect: "Download only Name_all.pdf + Solucionari_Global.xlsx"
         },
         hints: {
           docx: "The template must include the placeholders {NCodi} and {Pregunta01}..{Pregunta99} where each question block should appear. When generating the exam we keep the original formatting (fonts, bold, etc.).",
@@ -486,7 +486,6 @@ Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
         outputsInfo: "Outputs: <em>Exam_XXXXX.pdf</em> (or <em>Name_XXXXX.pdf</em> if a base name is given), a single <em>Solucionari_Global</em> (PDF and Excel) and <em>Name_all.pdf</em> for the combined file. Download everything as a ZIP or just the combined files. For Windows compatibility, ASCII names and ZIPs without accents are used.",
         footer: {
           license: "Random Exam Generator © 2025 by <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> with AI assistance is licensed under <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
-          ccLine: "Creative Commons · Attribution · NonCommercial · ShareAlike",
           version: "Version 1 · October 2025"
         },
         status: {
