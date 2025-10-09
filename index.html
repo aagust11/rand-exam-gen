@@ -299,6 +299,8 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.5/build/docxtemplater.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -338,7 +340,7 @@
         },
         actions: { generate: "Genera PDFs + Solucionari Global" },
         progress: { title: "Progrés" },
-        outputsInfo: "Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel) i <em>Nom_all.pdf</em> per al combinat. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.",
+        outputsInfo: "Sortides: <em>Exam_XXXXX.pdf</em> (o <em>Nom_XXXXX.pdf</em> si s'indica un nom), un únic <em>Solucionari_Global</em> (PDF i Excel), <em>Nom_all.pdf</em> per al combinat i, si la plantilla conté {PreguntaXX}, també el Word corresponent a cada examen amb el format original. Pots baixar-ho tot en ZIP o només els fitxers combinats. Per compatibilitat amb Windows, s'usen noms ASCII i ZIP sense accents.",
         footer: {
           license: "Generador Aleatori d'Exàmens © 2025 per <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> amb l'assistència de la IA està llicenciat sota <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
           version: "Versió 1 · Octubre 2025"
@@ -369,7 +371,9 @@
           missingXlsx: "Falta l'Excel amb les preguntes",
           insufficientQuestions: "La plantilla requereix {{need}} preguntes però l'Excel només en té {{available}}.",
           noValidQuestions: "No s'han trobat preguntes vàlides a l'Excel (recorda: fila 1 són encapçalaments).",
-          noMoreCodes: "No es poden generar més codis únics."
+          noMoreCodes: "No es poden generar més codis únics.",
+          invalidDocx: "La plantilla .docx és invàlida o està malmesa.",
+          docxRender: "No s'ha pogut generar el document Word a partir de la plantilla."
         },
         readme: `Aquest paquet s'ha generat des del navegador.
 
@@ -411,7 +415,7 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
         },
         actions: { generate: "Generar PDFs + Solucionario Global" },
         progress: { title: "Progreso" },
-        outputsInfo: "Salidas: <em>Exam_XXXXX.pdf</em> (o <em>Nombre_XXXXX.pdf</em> si se indica un nombre), un único <em>Solucionario_Global</em> (PDF y Excel) y <em>Nombre_all.pdf</em> para el combinado. Puedes descargar todo en ZIP o solo los archivos combinados. Para compatibilidad con Windows, se usan nombres ASCII y ZIP sin acentos.",
+        outputsInfo: "Salidas: <em>Exam_XXXXX.pdf</em> (o <em>Nombre_XXXXX.pdf</em> si se indica un nombre), un único <em>Solucionario_Global</em> (PDF y Excel), <em>Nombre_all.pdf</em> para el combinado y, si la plantilla contiene {PreguntaXX}, también el Word correspondiente a cada examen conservando el formato original. Puedes descargar todo en ZIP o solo los archivos combinados. Para compatibilidad con Windows, se usan nombres ASCII y ZIP sin acentos.",
         footer: {
           license: "Generador Aleatorio de Exámenes © 2025 por <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> con la asistencia de la IA está bajo licencia <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
           version: "Versión 1 · Octubre 2025"
@@ -442,7 +446,9 @@ Si el vostre Windows/antivirus segueix bloquejant, utilitzeu 7-Zip o WinRAR.`
           missingXlsx: "Falta el Excel con las preguntas",
           insufficientQuestions: "La plantilla requiere {{need}} preguntas pero el Excel solo tiene {{available}}.",
           noValidQuestions: "No se encontraron preguntas válidas en el Excel (recuerda: la fila 1 son encabezados).",
-          noMoreCodes: "No se pueden generar más códigos únicos."
+          noMoreCodes: "No se pueden generar más códigos únicos.",
+          invalidDocx: "La plantilla .docx es inválida o está dañada.",
+          docxRender: "No se pudo generar el documento Word a partir de la plantilla."
         },
         readme: `Este paquete se ha generado desde el navegador.
 
@@ -484,7 +490,7 @@ Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
         },
         actions: { generate: "Generate PDFs + Global Answer Key" },
         progress: { title: "Progress" },
-        outputsInfo: "Outputs: <em>Exam_XXXXX.pdf</em> (or <em>Name_XXXXX.pdf</em> if a base name is given), a single <em>Solucionari_Global</em> (PDF and Excel) and <em>Name_all.pdf</em> for the combined file. Download everything as a ZIP or just the combined files. For Windows compatibility, ASCII names and ZIPs without accents are used.",
+        outputsInfo: "Outputs: <em>Exam_XXXXX.pdf</em> (or <em>Name_XXXXX.pdf</em> if a base name is given), a single <em>Solucionari_Global</em> (PDF and Excel), <em>Name_all.pdf</em> for the combined file and, whenever the template includes {PreguntaXX}, a .docx per exam preserving the original layout. Download everything as a ZIP or just the combined files. For Windows compatibility, ASCII names and ZIPs without accents are used.",
         footer: {
           license: "Random Exam Generator © 2025 by <a href=\"mailto:aagust11@xtec.cat\">aagust11@xtec.cat</a> with AI assistance is licensed under <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>.",
           version: "Version 1 · October 2025"
@@ -515,7 +521,9 @@ Si Windows/antivirus sigue bloqueando, utiliza 7-Zip o WinRAR.`
           missingXlsx: "Missing the Excel question bank",
           insufficientQuestions: "The template needs {{need}} questions but the Excel only has {{available}}.",
           noValidQuestions: "No valid questions found in the Excel (remember: row 1 is headers).",
-          noMoreCodes: "No more unique codes can be generated."
+          noMoreCodes: "No more unique codes can be generated.",
+          invalidDocx: "The .docx template is invalid or corrupted.",
+          docxRender: "The Word document could not be generated from the template."
         },
         readme: `This package was generated in the browser.
 
@@ -683,16 +691,101 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
       return items;
     }
 
-    async function extractTemplateHtml(file){
+    const DOCX_TEMPLATER_OPTIONS = {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '{', end: '}' },
+      nullGetter(){ return ''; }
+    };
+
+    const mammothConversionOptions = {
+      styleMap: [],
+      includeDefaultStyleMap: true,
+      convertImage: mammoth.images.inline(async element => {
+        const imageBuffer = await element.read('base64');
+        return { src: `data:${element.contentType};base64,${imageBuffer}` };
+      })
+    };
+
+    async function loadDocxTemplate(file){
       const arrayBuffer = await file.arrayBuffer();
-      const { value: html } = await mammoth.convertToHtml({ arrayBuffer }, { styleMap: [] });
-      const questionSlots = [];
-      for(let i=1;i<=99;i++){
-        const key = String(i).padStart(2,'0');
-        if(html.includes(`{Pregunta${key}}`)) questionSlots.push(key);
+      try{
+        const zip = new PizZip(arrayBuffer.slice(0));
+        const doc = new window.docxtemplater(zip, DOCX_TEMPLATER_OPTIONS);
+        const fullText = typeof doc.getFullText === 'function' ? doc.getFullText() : '';
+        const questionSlots = [];
+        for(let i=1;i<=99;i++){
+          const key = String(i).padStart(2,'0');
+          if(fullText.includes(`{Pregunta${key}}`)) questionSlots.push(key);
+        }
+        questionSlots.sort();
+        const hasCode = fullText.includes('{NCodi}');
+        return { arrayBuffer, questionSlots, hasCode };
+      }catch(err){
+        console.error(err);
+        throw new Error(translations[currentLang].errors.invalidDocx);
       }
-      const hasCode = html.includes('{NCodi}');
-      return { html, hasCode, questionSlots };
+    }
+
+    async function docxToHtml(arrayBuffer){
+      const { value } = await mammoth.convertToHtml({ arrayBuffer }, mammothConversionOptions);
+      return value;
+    }
+
+    async function generateDocxFromTemplate(baseArrayBuffer, data){
+      try{
+        const zip = new PizZip(baseArrayBuffer.slice(0));
+        const doc = new window.docxtemplater(zip, DOCX_TEMPLATER_OPTIONS);
+        doc.render(data);
+        const blob = doc.getZip().generate({
+          type: 'blob',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        });
+        const renderedBuffer = await blob.arrayBuffer();
+        const html = await docxToHtml(renderedBuffer);
+        return { blob, html };
+      }catch(err){
+        console.error(err);
+        throw new Error(translations[currentLang].errors.docxRender);
+      }
+    }
+
+    function normalizeDocxText(value){
+      const normalized = String(value == null ? '' : value).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const zeroWidth = String.fromCharCode(0x200B);
+      return normalized.replace(/\{/g, '{'+zeroWidth).replace(/\}/g, zeroWidth+'}');
+    }
+
+    function renderQuestionDocx(index, q){
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      const lines = [];
+      const statementLines = normalizeDocxText(q.statement).split('\n');
+      if(statementLines.length > 0){
+        lines.push(`${index}. ${statementLines[0]}`.trimEnd());
+        for(let i=1;i<statementLines.length;i++){
+          const line = statementLines[i];
+          if(line.length>0){
+            lines.push(`   ${line}`);
+          } else {
+            lines.push('');
+          }
+        }
+      } else {
+        lines.push(`${index}.`);
+      }
+      q.options.forEach((op, idx)=>{
+        const optionLines = normalizeDocxText(op.text).split('\n');
+        if(optionLines.length>0){
+          lines.push(`${letters[idx]}. ${optionLines[0]}`.trimEnd());
+          for(let i=1;i<optionLines.length;i++){
+            const line = optionLines[i];
+            lines.push(line.length>0 ? `   ${line}` : '');
+          }
+        } else {
+          lines.push(`${letters[idx]}.`);
+        }
+      });
+      return lines.join('\n');
     }
 
     function renderQA(i, q){
@@ -708,10 +801,15 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
 
     async function htmlToPdfBlob(html, filenameHint){
       const container = document.createElement('div');
+      container.className = 'pdf-render';
       container.style.padding = '24px';
-      container.style.fontFamily = 'Times New Roman, serif';
+      container.style.backgroundColor = '#fff';
       container.style.color = '#000';
       container.innerHTML = html;
+      container.querySelectorAll('img').forEach(img=>{
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+      });
       document.body.appendChild(container);
       const opt = { margin: [10,10,10,10], filename: filenameHint, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
       const pdf = await html2pdf().set(opt).from(container).outputPdf('blob');
@@ -836,14 +934,17 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
         logMessage('questionsFound', { count: bank.length });
 
         logMessage('analyzingTemplate');
-        const tpl = await extractTemplateHtml(docxFile);
+        const tpl = await loadDocxTemplate(docxFile);
         if(!tpl.hasCode) logMessage('missingCode');
-        const slots = useOnlyPlaceholders && tpl.questionSlots.length>0
-          ? tpl.questionSlots.map(n=> parseInt(n,10))
-          : Array.from({length: Math.min(99, bank.length)}, (_,i)=> i+1);
-        const need = slots.length;
+        const placeholderKeys = tpl.questionSlots;
+        const placeholderCount = placeholderKeys.length;
+        const maxQuestions = Math.min(99, bank.length);
+        const docxSlotsToFill = placeholderCount > 0 ? Math.min(placeholderCount, maxQuestions) : 0;
+        const need = placeholderCount > 0
+          ? (useOnlyPlaceholders ? docxSlotsToFill : maxQuestions)
+          : maxQuestions;
         if(bank.length < need) throw new Error(formatString(translations[currentLang].errors.insufficientQuestions, { need, available: bank.length }));
-        logMessage('usingSlots', { count: need });
+        logMessage('usingSlots', { count: placeholderCount > 0 ? docxSlotsToFill : need });
 
         const usedCodes = new Set();
         const solutionsMatrix = [];
@@ -864,33 +965,50 @@ If Windows/antivirus still blocks it, use 7-Zip or WinRAR.`
 
           const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
           const solution = [];
-          const renderedBlocks = [];
+          const docxQuestionTexts = [];
+          const htmlExtras = [];
           questions.forEach((q, idx)=>{
             const options = [{text:q.correct, isCorrect:true}, ...q.incorrects.map(x=>({text:x,isCorrect:false}))];
             shuffle(options);
             const correctIndex = options.findIndex(o=>o.isCorrect);
             solution.push(letters[correctIndex]);
-            renderedBlocks.push(renderQA(idx+1, {statement:q.statement, options}));
+            if(idx < docxSlotsToFill){
+              docxQuestionTexts.push(renderQuestionDocx(idx+1, { statement: q.statement, options }));
+            } else {
+              htmlExtras.push(renderQA(idx+1, { statement: q.statement, options }));
+            }
           });
           solutionsMatrix.push([code, ...solution]);
 
-          let html = tpl.html;
-          html = html.split('{NCodi}').join(code);
-          if(tpl.questionSlots.length>0){
-            renderedBlocks.forEach((block, idx)=>{
-              const key = String(idx+1).padStart(2,'0');
-              html = html.split(`{Pregunta${key}}`).join(block);
+          const docxData = { NCodi: code };
+          if(placeholderCount > 0){
+            placeholderKeys.forEach((key, idx)=>{
+              if(idx < docxSlotsToFill){
+                docxData[`Pregunta${key}`] = docxQuestionTexts[idx] || '';
+              } else {
+                docxData[`Pregunta${key}`] = '';
+              }
             });
-          } else {
-            html += '<hr/>' + renderedBlocks.join('');
           }
-          html = `<div style="font-family:Times New Roman,serif;color:#000">${html}</div>`;
+
+          const { blob: docxBlob, html: templateHtml } = await generateDocxFromTemplate(tpl.arrayBuffer, docxData);
+          let html = templateHtml;
+          if(htmlExtras.length>0){
+            html += '<hr/>' + htmlExtras.join('');
+          }
+          html = `<div class="docx-html">${html}</div>`;
 
           const examFileName = hasCustomBase ? `${baseName}_${code}.pdf` : `Exam_${code}.pdf`;
+          const docxFileName = hasCustomBase ? `${baseName}_${code}.docx` : `Exam_${code}.docx`;
           const nameLabel = hasCustomBase ? baseName : 'Exam';
           setStatus('generatingExam', { name: nameLabel, code });
           const examPdf = await htmlToPdfBlob(html, examFileName);
-          if(zip){ zip.file(examFileName, examPdf, {binary:true}); }
+          if(zip){
+            zip.file(examFileName, examPdf, {binary:true});
+            if(placeholderCount > 0){
+              zip.file(docxFileName, docxBlob, {binary:true});
+            }
+          }
 
           const examBytes = await examPdf.arrayBuffer();
           const examDoc = await PDFDocument.load(examBytes);
